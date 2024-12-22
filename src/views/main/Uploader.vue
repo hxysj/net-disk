@@ -266,7 +266,7 @@ const addFile: (file: File, filePid: string) => void = async (
 
 // ----------
 // 每一个分片的大小
-const chunkSize = 1024 * 1024 * 1;
+const chunkSize = 1024 * 1024 * 5;
 // 计算文件的MD5
 const computedMd5: (fileItem: fileItemType) => Promise<string | null> = (
   fileItem
@@ -343,6 +343,96 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
   const chunks = Math.ceil(fileSize / chunkSize);
 
   // console.log('总分片数：',chunks)
+
+  async function uploadChunk(formData: any, chunkIndex: number): Promise<void> {
+    try {
+      // 进行分片的上传
+      let updateResult = await request({
+        method: "POST",
+        url: api.uploadFile,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        //上传后的回调信息
+        onUploadProgress: (event: any) => {
+          // console.log(event)
+          //获取之前上传的文件的大小
+          let loaded = event.loaded;
+          if (loaded > fileSize) {
+            loaded = fileSize;
+          }
+          //现在上传的文件的大小
+          currentFile.uploadSize = chunkIndex * chunkSize + loaded;
+          currentFile.uploadProgress = parseFloat(
+            (currentFile.uploadSize / fileSize).toFixed(2)
+          );
+        },
+      });
+      // console.log('进行请求！')
+      //如果上传后，放回的值为 null则退出
+      if (updateResult.data.code != 200) {
+        currentFile.status = STATUS.fail.value as
+          | "emptyfile"
+          | "fail"
+          | "init"
+          | "uploading"
+          | "upload_finish"
+          | "upload_seconds";
+        currentFile.errorMsg = updateResult.data.error;
+        localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
+        throw new Error(updateResult.data.error);
+      }
+      currentFile.fileId = updateResult.data.data.fileId;
+      //设置状态
+      type statusKey =
+        | "emptyfile"
+        | "fail"
+        | "init"
+        | "uploading"
+        | "upload_finish"
+        | "upload_seconds";
+      currentFile.status = STATUS[updateResult.data.data.status as statusKey]
+        .value as statusKey;
+      currentFile.chunkIndex = chunkIndex;
+      localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
+      // console.log(updateResult.data)
+      if (
+        updateResult.data.data.status === STATUS.upload_seconds.value ||
+        updateResult.data.data.status === STATUS.upload_finish.value
+      ) {
+        currentFile.uploadProgress = 1;
+        deleteDataFromIDB(currentFile.fileId);
+        localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
+        // 上传文件结束后，刷新一下列表
+        // console.log('上传成功')
+        emit("uploadCallback");
+      }
+    } catch (error: any) {
+      //出现错误的回调信息
+      console.log(error);
+      console.log(error.message);
+      console.log("出现错误");
+      currentFile.status = STATUS.fail.value as
+        | "emptyfile"
+        | "fail"
+        | "init"
+        | "uploading"
+        | "upload_finish"
+        | "upload_seconds";
+      if (error.response) {
+        currentFile.errorMsg = error.errorMsg;
+      } else {
+        currentFile.errorMsg = "未知错误！";
+      }
+      localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
+      throw new Error(error.errorMsg);
+    }
+  }
+  const batchSize = 1; // 每次并发请求的数量
+  const uploadPromises: Promise<any>[] = [];
+
   for (let i = chunkIndex; i < chunks; i++) {
     let delIndex = delList.value.indexOf(uid);
     if (delIndex != -1) {
@@ -379,92 +469,22 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
     formData.append("fileId", currentFile.fileId);
     formData.append("filePid", currentFile.filePid);
     formData.append("fileSize", currentFile.totalSize + "");
-    try {
-      // 进行分片的上传
-      let updateResult = await request({
-        method: "POST",
-        url: api.uploadFile,
-        data: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        //上传后的回调信息
-        onUploadProgress: (event: any) => {
-          // console.log(event)
-          //获取之前上传的文件的大小
-          let loaded = event.loaded;
-          if (loaded > fileSize) {
-            loaded = fileSize;
-          }
-          //现在上传的文件的大小
-          currentFile.uploadSize = i * chunkSize + loaded;
-          currentFile.uploadProgress = parseFloat(
-            (currentFile.uploadSize / fileSize).toFixed(2)
-          );
-        },
-      });
-      // console.log('进行请求！')
-      //如果上传后，放回的值为 null则退出
-      if (updateResult.data.code != 200) {
-        currentFile.status = STATUS.fail.value as
-          | "emptyfile"
-          | "fail"
-          | "init"
-          | "uploading"
-          | "upload_finish"
-          | "upload_seconds";
-        currentFile.errorMsg = updateResult.data.error;
-        localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-        break;
-      }
-      currentFile.fileId = updateResult.data.data.fileId;
-      //设置状态
-      type statusKey =
-        | "emptyfile"
-        | "fail"
-        | "init"
-        | "uploading"
-        | "upload_finish"
-        | "upload_seconds";
-      currentFile.status = STATUS[updateResult.data.data.status as statusKey]
-        .value as statusKey;
-      currentFile.chunkIndex = i;
-      localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-      // console.log(updateResult.data)
-      if (
-        updateResult.data.data.status === STATUS.upload_seconds.value ||
-        updateResult.data.data.status === STATUS.upload_finish.value
-      ) {
-        currentFile.uploadProgress = 1;
-        deleteDataFromIDB(currentFile.fileId);
-        localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-        // 上传文件结束后，刷新一下列表
-        // console.log('上传成功')
-        emit("uploadCallback");
-        break;
-      }
-    } catch (error: any) {
-      //出现错误的回调信息
-      console.log(error);
-      console.log(error.message);
-      console.log("出现错误");
-      currentFile.status = STATUS.fail.value as
-        | "emptyfile"
-        | "fail"
-        | "init"
-        | "uploading"
-        | "upload_finish"
-        | "upload_seconds";
-      if (error.response) {
-        currentFile.errorMsg = error.errorMsg;
-      } else {
-        currentFile.errorMsg = "未知错误！";
-      }
-      localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-      break;
+    uploadPromises.push(uploadChunk(formData, i)); // 每个分片上传任务
+
+    // 每当上传队列中的任务达到 batchSize，就执行这些任务并等待它们完成
+    if (uploadPromises.length === batchSize || i === chunks - 1) {
+      // 执行当前批次的请求，并等待它们完成
+      await Promise.all(uploadPromises);
+      uploadPromises.length = 0; // 清空队列，准备下一批请求
     }
   }
+
+  // console.log("所有文件分片上传完成");
+  // 判断是否暂停上传了
+  if (currentFile.pause) {
+    return;
+  }
+  emit("uploadCallback");
 };
 //--------------------------------------------------------------------------
 // 暂停上传
@@ -483,7 +503,7 @@ const continue_uploader = (uid: string, chunkIndex: number) => {
       item.pause = false;
     }
   });
-  console.log(fileList.value);
+  // console.log(fileList.value);
   uploadFile(uid, chunkIndex);
 };
 // ------------------------------------------------------------------------------
