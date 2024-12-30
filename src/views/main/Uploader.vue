@@ -117,15 +117,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { formatFileSize } from "@/utils/utils";
+import { STATUS } from "@/utils/data";
 import NotData from "@/components/NotData.vue";
 import SparkMD5 from "spark-md5";
-import request from "../../utils/request";
+import request from "@/utils/request";
 import { nanoid } from "nanoid";
-import {
-  addDataToIDB,
-  getDataFromIDB,
-  deleteDataFromIDB,
-} from "../../utils/db";
+import { addDataToIDB, getDataFromIDB, deleteDataFromIDB } from "@/utils/db";
+import CryptoJS from "crypto-js";
 // ------------------------------------------------------------------------
 // 文件的uid 暂时设置成 0   所有的地方都需要更改 file中不存在.uid属性 ？
 // ------------------------------------------------------------------------
@@ -137,45 +135,11 @@ const api = {
 
 //文件列表
 const fileList = ref<fileItemType[]>([]);
-// 状态
-const STATUS = {
-  emptyfile: {
-    value: "emptyfile",
-    desc: "文件为空",
-    color: "#F75000",
-    icon: "close",
-  },
-  fail: {
-    value: "fail",
-    desc: "上传失败",
-    color: "#F75000",
-    icon: "close",
-  },
-  init: {
-    value: "init",
-    desc: "解析中",
-    color: "#e6a23c",
-    icon: "clock",
-  },
-  uploading: {
-    value: "uploading",
-    desc: "上传中",
-    color: "#409eff",
-    icon: "upload",
-  },
-  upload_finish: {
-    value: "upload_finish",
-    desc: "上传完成",
-    color: "#67c23a",
-    icon: "ok",
-  },
-  upload_seconds: {
-    value: "upload_seconds",
-    desc: "秒传",
-    color: "#67c23a",
-    icon: "ok",
-  },
-};
+// 控制文件请求是否被取消
+const signalList = ref<
+  [{ fileId: string; signal: AbortController; status: boolean }]
+>([{ fileId: "", signal: new AbortController(), status: true }]);
+
 interface fileItemType {
   // 文件：文件大小，文件流，文件名...
   file: File;
@@ -245,6 +209,11 @@ const addFile: (file: File, filePid: string) => void = async (
     fileId: nanoid(),
   };
   fileList.value.unshift(fileItem);
+  signalList.value.push({
+    fileId: fileItem.fileId,
+    signal: new AbortController(),
+    status: true,
+  });
   // 如果上传的文件大小为空
   if (fileItem.totalSize === 0) {
     fileItem.status = "emptyfile";
@@ -266,7 +235,7 @@ const addFile: (file: File, filePid: string) => void = async (
 
 // ----------
 // 每一个分片的大小
-const chunkSize = 1024 * 1024 * 5;
+const chunkSize = 1024 * 1024 * 1;
 // 计算文件的MD5
 const computedMd5: (fileItem: fileItemType) => Promise<string | null> = (
   fileItem
@@ -343,8 +312,24 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
   const chunks = Math.ceil(fileSize / chunkSize);
 
   // console.log('总分片数：',chunks)
-
-  async function uploadChunk(formData: any, chunkIndex: number): Promise<void> {
+  // 文件块上传任务
+  async function uploadChunk(
+    formData: any,
+    chunkIndex: number,
+    status: keyof typeof STATUS,
+    fileId: string
+  ): Promise<void> {
+    // 如果文件已经上传完成，则退出
+    if (
+      status === STATUS.upload_seconds.value ||
+      status === STATUS.upload_finish.value
+    )
+      return;
+    let signalItem = signalList.value.find((item) => item.fileId === fileId);
+    if (!signalItem) {
+      return;
+    }
+    console.log(111);
     try {
       // 进行分片的上传
       let updateResult = await request({
@@ -353,8 +338,8 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
-          "X-CSRFToken": "{{ csrf_token }}",
         },
+        signal: signalItem.signal.signal,
         //上传后的回调信息
         onUploadProgress: (event: any) => {
           // console.log(event)
@@ -370,31 +355,17 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
           );
         },
       });
-      // console.log('进行请求！')
       //如果上传后，放回的值为 null则退出
-      if (updateResult.data.code != 200) {
-        currentFile.status = STATUS.fail.value as
-          | "emptyfile"
-          | "fail"
-          | "init"
-          | "uploading"
-          | "upload_finish"
-          | "upload_seconds";
+      if (updateResult.data.code != 200 || updateResult.code != 200) {
+        currentFile.status = STATUS.fail.value as keyof typeof STATUS;
         currentFile.errorMsg = updateResult.data.error;
         localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-        throw new Error(updateResult.data.error);
       }
       currentFile.fileId = updateResult.data.data.fileId;
       //设置状态
-      type statusKey =
-        | "emptyfile"
-        | "fail"
-        | "init"
-        | "uploading"
-        | "upload_finish"
-        | "upload_seconds";
-      currentFile.status = STATUS[updateResult.data.data.status as statusKey]
-        .value as statusKey;
+      currentFile.status = STATUS[
+        updateResult.data.data.status as keyof typeof STATUS
+      ].value as keyof typeof STATUS;
       currentFile.chunkIndex = chunkIndex;
       localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
       // console.log(updateResult.data)
@@ -410,24 +381,19 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
         emit("uploadCallback");
       }
     } catch (error: any) {
-      //出现错误的回调信息
-      console.log(error);
+      // 取消上传
+      if (error.message === "canceled") {
+        return;
+      }
       console.log(error.message);
       console.log("出现错误");
-      currentFile.status = STATUS.fail.value as
-        | "emptyfile"
-        | "fail"
-        | "init"
-        | "uploading"
-        | "upload_finish"
-        | "upload_seconds";
+      currentFile.status = STATUS.fail.value as keyof typeof STATUS;
       if (error.response) {
         currentFile.errorMsg = error.errorMsg;
       } else {
         currentFile.errorMsg = "未知错误！";
       }
       localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-      throw new Error(error.errorMsg);
     }
   }
   const batchSize = 1; // 每次并发请求的数量
@@ -442,6 +408,16 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
     // 每次操作的时候，file的状态可能会变
     currentFile = getFileByUid(uid);
     // console.log(currentFile)
+    if (!currentFile) {
+      return;
+    }
+
+    if (
+      signalList.value.find((item) => item.fileId === currentFile.fileId)
+        ?.status === false
+    ) {
+      return;
+    }
     if (currentFile.pause) {
       // console.log('暂停了')
       break;
@@ -457,11 +433,33 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
       file = file_data;
       chunkFile = file_data.slice(start, end);
     }
-    // console.log(chunkFile)
-
+    // console.log(chunkFile);
+    // 将 文件块Blob 转换为 ArrayBuffer
+    const chunkFileArrayBuffer = await chunkFile.arrayBuffer();
+    // 将 ArrayBuffer 转换为 WordArray
+    const wordArray = CryptoJS.lib.WordArray.create(chunkFileArrayBuffer);
+    // 密钥和初始化向量（IV）
+    const encryptionKey = "secret-key123456"; // 16 字节
+    const iv = CryptoJS.enc.Utf8.parse("1234567890123456"); // 16 字节的 IV
+    // 使用 AES 加密
+    const encrypted = CryptoJS.AES.encrypt(
+      wordArray,
+      CryptoJS.enc.Utf8.parse(encryptionKey),
+      {
+        iv: iv,
+        padding: CryptoJS.pad.Pkcs7,
+        mode: CryptoJS.mode.CBC,
+      }
+    );
+    // 将加密数据转成 Base64 字符串
+    const encryptedBase64 = CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
+    // 将base64的数据转为文件
+    const encryptedChunk = new Blob([encryptedBase64], {
+      type: "application/octet-stream",
+    });
     // console.log('开始分片上传！',end)
     const formData = new FormData();
-    formData.append("file", chunkFile);
+    formData.append("file", encryptedChunk);
     formData.append("fileName", file.name);
     formData.append("fileMd5", currentFile.md5 as string);
     formData.append("chunkIndex", i + "");
@@ -469,7 +467,11 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
     formData.append("fileId", currentFile.fileId);
     formData.append("filePid", currentFile.filePid);
     formData.append("fileSize", currentFile.totalSize + "");
-    uploadPromises.push(uploadChunk(formData, i)); // 每个分片上传任务
+    formData.append("fileType", file.type);
+
+    uploadPromises.push(
+      uploadChunk(formData, i, currentFile.status, currentFile.fileId)
+    ); // 每个分片上传任务
 
     // 每当上传队列中的任务达到 batchSize，就执行这些任务并等待它们完成
     if (uploadPromises.length === batchSize || i === chunks - 1) {
@@ -509,6 +511,11 @@ const continue_uploader = (uid: string, chunkIndex: number) => {
 // ------------------------------------------------------------------------------
 // 取消上传
 const cancel_uploader = async (uid: string, fileId: string) => {
+  let signalItem = signalList.value.find((item) => item.fileId === fileId);
+  if (signalItem) {
+    signalItem.signal.abort();
+    signalItem.status = false;
+  }
   fileList.value.map((item) => {
     if (item.uid === uid) {
       item.pause = false;
@@ -530,6 +537,7 @@ const cancel_uploader = async (uid: string, fileId: string) => {
     return;
   }
   fileList.value = fileList.value.filter((item) => item.uid != uid);
+  localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
 };
 // ------------------------------------------------------------------------------------------------
 // 删除文件的上传记录
@@ -550,8 +558,13 @@ onMounted(() => {
       localStorage.getItem("uploadFileList") as string
     );
     fileList.value = local_fileList;
-    // console.log(local_fileList)
-    // console.log(fileList.value)
+    fileList.value.forEach((item) => {
+      signalList.value.push({
+        fileId: item.fileId,
+        status: true,
+        signal: new AbortController(),
+      });
+    });
   }
 });
 // 将实现文件上传的方法和删除历史记录共享出去

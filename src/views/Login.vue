@@ -461,7 +461,7 @@ const refresh_code = async () => {
     });
     return;
   }
-  console.log(result);
+  // console.log(result);
   identifyId.value = result.data.captcha_id;
   identifyImage.value = result.data.captcha_image;
 };
