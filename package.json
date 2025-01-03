@@ -22,6 +22,7 @@
     "highlight.js": "^11.10.0",
     "nanoid": "^5.0.7",
     "serve": "^14.2.4",
+    "socket.io-client": "^4.8.1",
     "spark-md5": "^3.0.2",
     "vue": "^3.4.37",
     "vue-clipboard3": "^2.0.0",
