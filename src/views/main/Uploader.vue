@@ -219,14 +219,12 @@ const addFile: (file: File, filePid: string) => void = async (
 
   // 获取计算好的文件md5值
   let md5FileUid = await computedMd5(fileItem);
-  // console.log(md5FileUid)
   if (md5FileUid === null) {
     return;
   }
   localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
   addDataToIDB(fileItem.fileId, file);
   // 进行文件上传
-  // console.log(await getDataFromIDB(fileItem.fileId))
   uploadFile(md5FileUid, fileItem.fileId);
 };
 
@@ -349,7 +347,6 @@ const uploadFile: (
         file = file_data;
         chunkFile = file_data.slice(start, end);
       }
-      // console.log(chunkFile);
       // 将 文件块Blob 转换为 ArrayBuffer
       const chunkFileArrayBuffer = await chunkFile.arrayBuffer();
       // 将 ArrayBuffer 转换为 WordArray
@@ -371,7 +368,6 @@ const uploadFile: (
       const encryptedBase64 = CryptoJS.enc.Base64.stringify(
         encrypted.ciphertext
       );
-      // console.log('开始分片上传！',end)
       const formData = {
         fileBase64: encryptedBase64,
         fileName: file.name,
@@ -408,7 +404,6 @@ const uploadFile: (
       currentFile.uploadProgress = 1;
       deleteDataFromIDB(currentFile.fileId);
       localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-      // 上传文件结束后，刷新一下列表
       // console.log('上传成功')
       emit("uploadCallback");
     }
@@ -629,7 +624,6 @@ const continue_uploader = (uid: string, fileId: string, chunkIndex: number) => {
       item.pause = false;
     }
   });
-  // console.log(fileList.value);
   uploadFile(uid, fileId, chunkIndex);
 };
 // ------------------------------------------------------------------------------
@@ -699,14 +693,12 @@ defineExpose({ addFile, clearHistory });
 .file-list {
   display: flex;
   min-height: 300px;
-  // justify-content: center;
   flex-direction: column;
   align-items: center;
   .upload-panel {
     width: 100%;
     display: flex;
     flex-direction: column;
-    // gap: 1px;
   }
   .file-item {
     width: 100%;
