@@ -79,7 +79,7 @@
             <span
               class="iconfont icon-pause"
               v-else
-              @click="pause_uploader(item.uid)"
+              @click="pause_uploader(item.fileId)"
             ></span>
             <!-- 取消按钮 -->
             <span
@@ -100,7 +100,7 @@
                 item.status === STATUS.upload_finish.value ||
                 item.status === STATUS.upload_seconds.value
               "
-              @click="delete_file_histroy(item.uid)"
+              @click="delete_file_history(item.uid)"
             ></span>
           </template>
         </div>
@@ -128,6 +128,7 @@ import CryptoJS from "crypto-js";
 const api = {
   uploadFile: "file/uploadFile",
   cancelUpload: "file/cancelUpload",
+  pauseUploader: "file/pauseUploader",
 };
 
 //文件列表
@@ -172,37 +173,20 @@ const addFile: (file: File, filePid: string) => void = async (
   file,
   filePid
 ) => {
-  // console.log(file)
-  // console.log(filePid)
   const fileItem: fileItemType = {
-    // 文件：文件大小，文件流，文件名...
     file: file,
-    // 文件的Uid
-    // uid:file.uid,
     uid: nanoid(),
-    // md5值
     md5: null,
-    // md5进度
     md5Progress: 0,
-    //文件名
     fileName: file.name,
-    // 上传状态
     status: "init",
-    // 已上传大小
     uploadSize: 0,
-    // 文件总大小
     totalSize: file.size,
-    // 上传进度
     uploadProgress: 0,
-    // 暂停
     pause: false,
-    //当前分片
     chunkIndex: 0,
-    //文件父级ID
     filePid: filePid,
-    // 错误信息
     errorMsg: null,
-    // 文件id
     fileId: nanoid(),
   };
   fileList.value.unshift(fileItem);
@@ -284,7 +268,6 @@ const computedMd5: (fileItem: fileItemType) => Promise<string | null> = (
 // 获取文件
 const getFileByUid: (uid: string) => fileItemType = (uid) => {
   let file = fileList.value.find((item) => {
-    // return item.file.uid === uid
     return item.uid === uid;
   }) as fileItemType;
   return file;
@@ -292,7 +275,7 @@ const getFileByUid: (uid: string) => fileItemType = (uid) => {
 // 要删除的文件（上传一半进行删除操作）
 const delList = ref<string[]>([]);
 
-const emit = defineEmits(["ploadCallback", "uploadCallback"]);
+const emit = defineEmits(["uploadCallback"]);
 
 // 使用websocket进行文件分块上传
 // 进行文件上传
@@ -327,15 +310,15 @@ const uploadFile: (
       }
       // 每次操作的时候，file的状态可能会变
       currentFile = getFileByUid(uid);
-      if (!currentFile) {
+      if (
+        !currentFile ||
+        currentFile.uploadProgress === 1 ||
+        currentFile.pause
+      ) {
         ws.close();
         return;
       }
 
-      if (currentFile.pause) {
-        ws.close();
-        return;
-      }
       let start = i * chunkSize;
       let end = start + chunkSize >= fileSize ? fileSize : start + chunkSize;
       // 对文件进行切片
@@ -392,6 +375,7 @@ const uploadFile: (
       return;
     }
     currentFile.status = result.status as keyof typeof STATUS;
+    currentFile.fileName = result.fileName;
     currentFile.uploadSize = parseInt(result.index) * chunkSize;
     currentFile.uploadProgress = parseFloat(
       (currentFile.uploadSize / fileSize).toFixed(2)
@@ -404,8 +388,9 @@ const uploadFile: (
       currentFile.uploadProgress = 1;
       deleteDataFromIDB(currentFile.fileId);
       localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
-      // console.log('上传成功')
+      // 上传文件结束后，刷新一下列表
       emit("uploadCallback");
+      ws.close();
     }
   };
   ws.onerror = (e) => {
@@ -609,11 +594,19 @@ const uploadFile: (
 // };
 //--------------------------------------------------------------------------
 // 暂停上传
-const pause_uploader = (uid: string) => {
+const pause_uploader = async (file_id: string) => {
   fileList.value.map((item) => {
-    if (item.uid == uid) {
+    if (item.fileId == file_id) {
       item.pause = true;
     }
+  });
+  localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
+  await request({
+    method: "get",
+    url: api.pauseUploader,
+    params: {
+      file_id: file_id,
+    },
   });
 };
 // --------------------------------------------------------------------------
@@ -659,7 +652,7 @@ const cancel_uploader = async (uid: string, fileId: string) => {
 };
 // ------------------------------------------------------------------------------------------------
 // 删除文件的上传记录
-const delete_file_histroy = (uid: string) => {
+const delete_file_history = (uid: string) => {
   fileList.value = fileList.value.filter((item) => item.uid != uid);
   localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
 };
