@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@highlightjs/vue-plugin": "^2.1.0",
+    "@joeattardi/emoji-button": "^4.6.4",
     "@popperjs/core": "^2.11.8",
     "@types/node": "^22.5.2",
     "aplayer": "^1.10.1",

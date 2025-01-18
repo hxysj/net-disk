@@ -31,7 +31,10 @@ declare module "@/utils/utils" {
   export function formatFileSize(fileSizeInB: number): string;
   export function getCurrentFormattedTime(): string;
   export function parseToken(token: string): any;
-  // 根据你的 utils.ts 中的实际导出来添加其他函数或变量的声明
+  export function formatTime(
+    targetTime: string | Date,
+    language: "zh" | "en" = "zh"
+  ): string;
 }
 
 declare module "@/utils/request" {

@@ -96,7 +96,7 @@
     <div class="body">
       <div class="left-side" :class="[ishide ? 'showSide' : '']">
         <div class="menu-list">
-          <template v-for="item in menus">
+          <template v-for="item in MENUS">
             <div
               @click="jump(item)"
               :class="[
@@ -245,6 +245,7 @@ import UpdateAvatar from "@/views/UpdateAvatar.vue";
 import UpdatePassword from "@/views/UpdatePassword.vue";
 import Uploader from "@/views/main/Uploader.vue";
 import { formatFileSize, parseToken } from "@/utils/utils";
+import { MENUS } from "../utils/data";
 import { getCurrentInstance } from "vue";
 import request from "../utils/request";
 import Loadding from "@/components/Loadding.vue";
@@ -266,102 +267,6 @@ const userInfo = ref({
   ...parseToken(token as string),
 });
 
-// 存放菜单信息
-const menus = ref<chooseMenu[]>([
-  {
-    icon: "cloude",
-    name: "首页",
-    menuCode: "main",
-    path: "/main/all",
-    allShow: true,
-    children: [
-      {
-        icon: "all",
-        name: "全部",
-        category: "all",
-        path: "/main/all",
-      },
-      {
-        icon: "video",
-        name: "视频",
-        category: "video",
-        path: "/main/video",
-      },
-      {
-        icon: "music",
-        name: "音乐",
-        category: "music",
-        path: "/main/music",
-      },
-      {
-        icon: "image",
-        name: "图片",
-        category: "image",
-        path: "/main/image",
-      },
-      {
-        icon: "doc",
-        name: "文档",
-        category: "doc",
-        path: "/main/doc",
-      },
-      {
-        icon: "more",
-        name: "其他",
-        category: "others",
-        path: "/main/others",
-      },
-    ],
-  },
-  {
-    path: "/myshare",
-    icon: "share",
-    name: "分享",
-    menuCode: "share",
-    allShow: true,
-    children: [
-      {
-        name: "分享记录",
-        path: "/myshare",
-      },
-    ],
-  },
-  {
-    path: "/recycle",
-    icon: "del",
-    name: "回收站",
-    menuCode: "recycle",
-    allShow: true,
-    tips: "",
-    children: [
-      {
-        name: "删除的文件",
-        path: "/recycle",
-      },
-    ],
-  },
-  {
-    path: "/settings/fileList",
-    icon: "settings",
-    name: "设置",
-    menuCode: "settings",
-    allShow: false,
-    children: [
-      {
-        name: "用户文件",
-        path: "/settings/fileList",
-      },
-      {
-        name: "用户管理",
-        path: "/settings/userList",
-      },
-      {
-        name: "系统设置",
-        path: "/settings/sysSetting",
-      },
-    ],
-  },
-]);
 // 当前激活状态的类型
 interface chooseMenu {
   icon?: string;
@@ -436,7 +341,7 @@ const jump: (item: chooseMenu) => void = (item) => {
 // -------------------------------------------------------
 // 监听路由变化
 const setMenu: (menuCode: string, path: string) => void = (menuCode, path) => {
-  const menu = menus.value.find((item) => {
+  const menu = MENUS.find((item) => {
     return item.menuCode === menuCode;
   }) as chooseMenu;
   currentMenu.value = menu;
@@ -465,7 +370,6 @@ const showAvatar = () => {
     imageUrl: baseurl + "media/" + userInfo.value.avatar,
   });
 };
-// 子组件通知父组件刷新cookie了，重新获取用户信息
 // 在图片链接添加？timeStamp=1321不影响图片的显示，刷新参数可以清除浏览器的缓存重新加载图像
 const timeStamp = ref(0);
 const refreshAvatar = () => {
