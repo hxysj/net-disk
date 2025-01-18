@@ -25,7 +25,9 @@
           <div class="name">{{ searchInfo.nick_name }}</div>
           <div class="email">邮箱：{{ searchInfo.email }}</div>
         </div>
-        <button class="user-btn">添加好友</button>
+        <button class="user-btn" @click="addFriend(searchInfo.user_id)">
+          添加好友
+        </button>
       </div>
     </div>
   </div>
@@ -39,6 +41,7 @@ import MessageToast from "@/components/message/MessageToast.vue";
 
 const api = {
   searchUser: "searchUser",
+  changeFriend: "changeFriend",
 };
 
 const baseUrl =
@@ -74,6 +77,30 @@ const searchUser = async () => {
     });
   } else {
     searchInfo.value = res.data.data;
+  }
+};
+
+const addFriend = async (uid: string) => {
+  let res = await request({
+    url: api.changeFriend,
+    method: "post",
+    data: {
+      uid: uid,
+      status: 0,
+    },
+  });
+  if (res.data.code !== 10000) {
+    messageToast.value.showToast({
+      type: "error",
+      message: "添加好友失败!",
+    });
+  } else {
+    messageToast.value.showToast({
+      type: "success",
+      message: "已发送好友申请!",
+    });
+
+    visible.value = false;
   }
 };
 </script>

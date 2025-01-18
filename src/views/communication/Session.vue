@@ -32,18 +32,43 @@
               </div>
             </div>
           </div>
+          <div
+            class="friend-apply session-left-content-list-item"
+            v-if="friendApplyList.length > 0"
+            @click="changeCurrentSession('0')"
+            :class="'0' === currentSessionId ? 'active' : ''"
+          >
+            <img src="" alt="" class="session-item-img" />
+            <div class="session-item-info">
+              <div class="info-header">好友申请</div>
+            </div>
+          </div>
         </template>
       </CommunicationSide>
     </div>
     <div class="session-right">
       <ChatBox
-        v-if="currentSessionId"
+        v-if="currentSessionId && sessionType === 'session'"
         :message-list="sessionMessage[currentSessionId]"
         :currentUser="currentUser"
         @submit="sendMessage"
       />
+      <div v-else-if="sessionType === 'friendApply'" class="friend-apply-box">
+        <div class="friend-apply-box-item" v-for="item in friendApplyList">
+          <img :src="imgBaseurl + item.avatar" alt="" />
+          <div class="friend-apply-box-item-info">
+            <div class="friend-apply-box-item-info-header">
+              {{ item.nick_name }}
+            </div>
+            <div class="friend-apply-box-item-info-content">
+              {{ APPLY_STATUS[item.status] }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  <MessageToast ref="messageToast" />
 </template>
 
 <script setup lang="ts">
@@ -52,6 +77,9 @@ import CommunicationSide from "./CommunicationSide.vue";
 import ChatBox from "@/components/chat-component/ChatBox.vue";
 import request from "@/utils/request";
 import { parseToken, formatTime } from "@/utils/utils";
+import { APPLY_STATUS } from "@/utils/data";
+import MessageToast from "@/components/message/MessageToast.vue";
+
 const currentUser = parseToken(localStorage.getItem("token") as string);
 const imgBaseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl + "media/";
@@ -60,7 +88,10 @@ const api = {
   getMessageList: "chat/getMessage",
   createSession: "chat/addNewSession",
   setMessageRead: "chat/setMessageRead",
+  getFriendApply: "getFriendApply",
 };
+
+const messageToast = ref();
 
 interface sessionType {
   conversation_id: string;
@@ -73,9 +104,15 @@ interface sessionType {
 }
 const sessionList = ref<sessionType[]>([]);
 const currentSessionId = ref("");
-
+const sessionType = ref("session");
 const changeCurrentSession = (id: string) => {
   currentSessionId.value = id;
+  console.log(id);
+  if (id === "0") {
+    sessionType.value = "friendApply";
+    return;
+  }
+  sessionType.value = "session";
   getMessageList();
 };
 
@@ -86,6 +123,14 @@ interface messageType {
 const sessionMessage = ref<{
   [key: string]: messageType[];
 }>({});
+
+interface FriendApplyType {
+  user_id: string;
+  nick_name: string;
+  avatar: string;
+  status: number;
+}
+const friendApplyList = ref<FriendApplyType[]>([]);
 
 const wsPool: any = {};
 const sendMessage = (message: string) => {
@@ -206,6 +251,20 @@ onMounted(async () => {
       console.log("连接错误");
     };
   });
+
+  // 获取用户的好友申请信息
+  let result = await request({
+    url: api.getFriendApply,
+    method: "GET",
+  });
+  if (result.data.code !== 10000) {
+    messageToast.value.showToast({
+      type: "error",
+      message: "获取好友申请信息失败!",
+    });
+  } else {
+    friendApplyList.value = result.data.list;
+  }
 });
 
 watch(

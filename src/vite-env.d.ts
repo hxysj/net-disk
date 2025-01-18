@@ -74,6 +74,9 @@ declare module "@/utils/data" {
       color?: string;
     };
   };
+  export const APPLY_STATUS: {
+    [key: string]: string;
+  };
 }
 
 // src/utils/db.d.ts

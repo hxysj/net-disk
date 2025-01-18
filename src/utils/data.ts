@@ -151,3 +151,16 @@ export const MENUS = [
     ],
   },
 ];
+
+// status 状态： 0待通过 1拒接 2通过
+export const APPLY_STATUS = {
+  0: "待通过",
+  1: "已拒绝",
+  2: "已通过",
+};
+
+export const APPLY_STATUS_COLOR = {
+  0: "#409eff",
+  1: "#F75000",
+  2: "#67c23a",
+};
