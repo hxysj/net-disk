@@ -51,18 +51,85 @@
         v-if="currentSessionId && sessionType === 'session'"
         :message-list="sessionMessage[currentSessionId]"
         :currentUser="currentUser"
+        :friend="
+          sessionList.find((item) => item.conversation_id === currentSessionId)
+            ?.nick_name
+        "
         @submit="sendMessage"
       />
-      <div v-else-if="sessionType === 'friendApply'" class="friend-apply-box">
-        <div class="friend-apply-box-item" v-for="item in friendApplyList">
-          <img :src="imgBaseurl + item.avatar" alt="" />
-          <div class="friend-apply-box-item-info">
+      <div
+        v-else-if="sessionType === 'friendApply'"
+        class="friend-apply-box d-flex flex-column gap-2"
+      >
+        <div
+          class="friend-apply-box-item d-flex align-items-center"
+          v-for="item in friendApplyList"
+        >
+          <img
+            class="friend-apply-box-item-img"
+            :src="
+              imgBaseurl +
+              (currentUser.uid === item.userId1
+                ? item.userAvatar2.replace('media/', '')
+                : item.userAvatar1.replace('media/', ''))
+            "
+            alt=""
+          />
+          <div class="friend-apply-box-item-info flex-grow-1">
             <div class="friend-apply-box-item-info-header">
-              {{ item.nick_name }}
+              {{
+                currentUser.uid === item.userId1
+                  ? item.userName2
+                  : item.userName1
+              }}
             </div>
             <div class="friend-apply-box-item-info-content">
-              {{ APPLY_STATUS[item.status] }}
+              {{
+                currentUser.uid === item.userId1
+                  ? "你已发送好友申请"
+                  : "申请添加你为好友"
+              }}
             </div>
+          </div>
+          <div class="friend-apply-box-item-info-status d-flex gap-2">
+            <template v-if="item.status === 2">
+              <button
+                class="btn btn-primary"
+                @click="
+                  createSession(
+                    currentUser.uid === item.userId2
+                      ? item.userId1
+                      : item.userId2
+                  )
+                "
+              >
+                发送消息
+              </button>
+            </template>
+            <template
+              v-else-if="currentUser.uid === item.userId2 && item.status === 0"
+            >
+              <button
+                class="btn btn-primary"
+                @click="handleChangeFriend(item.f_id, 2)"
+              >
+                同意
+              </button>
+              <button
+                class="btn btn-danger"
+                @click="handleChangeFriend(item.f_id, 1)"
+              >
+                拒绝
+              </button>
+            </template>
+            <template v-else>
+              <div
+                class="status"
+                :style="{ color: APPLY_STATUS_COLOR[item.status] }"
+              >
+                {{ APPLY_STATUS[item.status] }}
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -77,10 +144,15 @@ import CommunicationSide from "./CommunicationSide.vue";
 import ChatBox from "@/components/chat-component/ChatBox.vue";
 import request from "@/utils/request";
 import { parseToken, formatTime } from "@/utils/utils";
-import { APPLY_STATUS } from "@/utils/data";
+import { APPLY_STATUS, APPLY_STATUS_COLOR } from "@/utils/data";
+import { useRoute, useRouter } from "vue-router";
 import MessageToast from "@/components/message/MessageToast.vue";
 
+// 添加 emits 声明
+defineEmits(["addFile"]);
+
 const currentUser = parseToken(localStorage.getItem("token") as string);
+
 const imgBaseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl + "media/";
 const api = {
@@ -89,8 +161,10 @@ const api = {
   createSession: "chat/addNewSession",
   setMessageRead: "chat/setMessageRead",
   getFriendApply: "getFriendApply",
+  changeFriend: "changeFriend",
 };
-
+const route = useRoute();
+const router = useRouter();
 const messageToast = ref();
 
 interface sessionType {
@@ -107,7 +181,6 @@ const currentSessionId = ref("");
 const sessionType = ref("session");
 const changeCurrentSession = (id: string) => {
   currentSessionId.value = id;
-  console.log(id);
   if (id === "0") {
     sessionType.value = "friendApply";
     return;
@@ -125,9 +198,13 @@ const sessionMessage = ref<{
 }>({});
 
 interface FriendApplyType {
-  user_id: string;
-  nick_name: string;
-  avatar: string;
+  f_id: string;
+  userId1: string;
+  userId2: string;
+  userName1: string;
+  userName2: string;
+  userAvatar1: string;
+  userAvatar2: string;
   status: number;
 }
 const friendApplyList = ref<FriendApplyType[]>([]);
@@ -179,6 +256,7 @@ const sendMessage = (message: string) => {
   }
 };
 
+// 获取会话消息
 const getMessageList = async () => {
   let result = await request({
     url: api.getMessageList,
@@ -190,6 +268,31 @@ const getMessageList = async () => {
   sessionMessage.value[currentSessionId.value] = result.data.list;
 };
 
+// 处理好友申请
+const handleChangeFriend = async (f_id: string, status: number) => {
+  let result = await request({
+    url: api.changeFriend,
+    method: "POST",
+    data: {
+      id: f_id,
+      status,
+    },
+  });
+  if (result.data.code !== 10000) {
+    messageToast.value.showToast({
+      type: "error",
+      message: "操作失败，请稍后再试！",
+    });
+  } else {
+    messageToast.value.showToast({
+      type: "success",
+      message: "操作成功！",
+    });
+  }
+  getFriendApplyList();
+};
+
+// 清除会话消息计数
 const clearMessageCount = () => {
   currentSessionId.value &&
     ((
@@ -199,17 +302,39 @@ const clearMessageCount = () => {
     ).new_message = 0);
 };
 
-onMounted(async () => {
-  // const formData = new FormData();
-  // formData.append("user", "12esd9ujmdis1aDSDHUSIDN218njA__!!SAJ");
-  // request({
-  //   url: api.createSession,
-  //   method: "POST",
-  //   data: formData,
-  // }).then((res) => {
-  //   console.log(res);
-  // });
+// 获取用户的好友申请信息
+const getFriendApplyList = async () => {
+  // 获取用户的好友申请信息
+  let result = await request({
+    url: api.getFriendApply,
+    method: "GET",
+  });
+  if (result.data.code !== 10000) {
+    messageToast.value.showToast({
+      type: "error",
+      message: "获取好友申请信息失败!",
+    });
+  } else {
+    friendApplyList.value = result.data.list;
+  }
+};
 
+// 对已经添加的好友发送消息
+const createSession = async (user_id: string) => {
+  const formData = new FormData();
+  formData.append("user", user_id);
+  request({
+    url: api.createSession,
+    method: "POST",
+    data: formData,
+  }).then((res: any) => {
+    if (res.data.code === 10000) {
+      router.push("/message/session?id=" + res.data.conversation_id);
+    }
+  });
+};
+
+onMounted(async () => {
   let res: { data: { code: string; list: sessionType[] } } = await request({
     url: api.getSessionList,
     method: "GET",
@@ -252,18 +377,12 @@ onMounted(async () => {
     };
   });
 
-  // 获取用户的好友申请信息
-  let result = await request({
-    url: api.getFriendApply,
-    method: "GET",
-  });
-  if (result.data.code !== 10000) {
-    messageToast.value.showToast({
-      type: "error",
-      message: "获取好友申请信息失败!",
-    });
-  } else {
-    friendApplyList.value = result.data.list;
+  getFriendApplyList();
+  // 如果是其他页面跳转过来的，则会携带id（会话的id）
+  if (route.query.id) {
+    currentSessionId.value = route.query.id as string;
+    sessionType.value = "session";
+    getMessageList();
   }
 });
 
@@ -283,6 +402,16 @@ watch(
     deep: true,
   }
 );
+watch(
+  () => route.query.id,
+  (newVal) => {
+    if (newVal) {
+      currentSessionId.value = newVal as string;
+      sessionType.value = "session";
+      getMessageList();
+    }
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -292,6 +421,41 @@ watch(
   .session-right {
     flex: 1;
     height: 100%;
+    .friend-apply-box {
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.05);
+      height: 100%;
+      .friend-apply-box-item {
+        background-color: white;
+        border-radius: 10px;
+        gap: 20px;
+        padding: 15px;
+        .friend-apply-box-item-img {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+        }
+        .status {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.5);
+        }
+        .friend-apply-box-item-info-content {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.5);
+        }
+        .friend-apply-box-item-info-header {
+          font-size: 14px;
+          font-weight: bolder;
+        }
+        .friend-apply-box-item-info-status {
+          cursor: pointer;
+          .btn {
+            height: 30px;
+            font-size: 12px;
+          }
+        }
+      }
+    }
   }
 }
 .session-left {

@@ -92,6 +92,8 @@ watch(
     border-bottom: 1px solid rgb(233, 233, 233);
     .title {
       cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
     }
   }
   .content {
