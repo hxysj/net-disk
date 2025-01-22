@@ -45,8 +45,17 @@
             </div>
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" href="#" @click="deleteFriend(false)"
-                  >删除</a
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="deleteFriend(false, 'delete')"
+                  >删除好友</a
+                >
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="deleteFriend(false, 'clear')"
+                  >清空聊天记录</a
                 >
               </li>
             </ul>
@@ -63,7 +72,7 @@
       </div>
     </div>
   </div>
-  <MessageModal ref="messageModalRef" @submit="deleteFriend(true)" />
+  <MessageModal ref="messageModalRef" @submit="deleteFriend(true, '')" />
   <MessageToast ref="messageToastRef" />
 </template>
 
@@ -86,6 +95,7 @@ const api = {
   getFriendList: "getFriendList",
   createSession: "chat/addNewSession",
   deleteFriend: "deleteFriend",
+  clearChatRecord: "clearChatRecord",
 };
 
 const baseUrl =
@@ -100,7 +110,7 @@ interface Friend {
 }
 const friendList = ref<Friend[]>([]);
 const currentFriend = ref<Friend | null>(null);
-
+const deleteType = ref<string>("");
 const createSession = async () => {
   const formData = new FormData();
   formData.append("user", currentFriend.value?.uid as string);
@@ -125,28 +135,49 @@ const getFriendList = async () => {
   }
 };
 
-const deleteFriend = async (isDelete: boolean) => {
+const deleteFriend = async (isDelete: boolean, type: string) => {
   if (!isDelete) {
-    messageModalRef.value.openMessage({
-      title: "温馨提示！",
-      message: "确定要删除该好友吗？",
-      type: "warning",
-    });
+    deleteType.value = type;
+    type === "delete"
+      ? messageModalRef.value.openMessage({
+          title: "温馨提示！",
+          message: "确定要删除该好友吗？同时也会将所有的聊天记录删除！",
+          type: "warning",
+        })
+      : messageModalRef.value.openMessage({
+          title: "温馨提示！",
+          message: "确定要清空聊天记录吗？",
+          type: "warning",
+        });
     return;
   }
-  let result = await request({
-    url: api.deleteFriend,
-    method: "POST",
-    data: {
-      f_id: currentFriend.value?.f_id,
-    },
-  });
-  if (result.data.code === 10000) {
-    messageToastRef.value.showToast({
-      type: "success",
-      message: "删除好友成功",
+  if (deleteType.value === "delete") {
+    let result = await request({
+      url: api.deleteFriend,
+      method: "POST",
+      data: {
+        f_id: currentFriend.value?.f_id,
+      },
     });
-    getFriendList();
+    if (result.data.code === 10000) {
+      messageToastRef.value.showToast({
+        type: "success",
+        message: "删除好友成功",
+      });
+      getFriendList();
+    }
+  }
+  if (type === "clear") {
+    let result = await request({
+      url: api.clearChatRecord,
+      method: "POST",
+    });
+    if (result.data.code === 10000) {
+      messageToastRef.value.showToast({
+        type: "success",
+        message: "清空聊天记录成功",
+      });
+    }
   }
 };
 
@@ -209,12 +240,13 @@ onMounted(() => {
           font-size: 12px;
         }
         .dropdown-menu {
-          padding: 0;
-          min-width: 75px;
-          max-width: 75px;
+          padding: 5px;
+          min-width: 100px;
+          max-width: 100px;
           transform: translate(-26px, 20px);
           .dropdown-item {
             cursor: pointer;
+            padding: 5px;
             font-size: 12px;
             text-align: center;
           }
