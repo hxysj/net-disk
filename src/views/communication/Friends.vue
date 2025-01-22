@@ -95,7 +95,7 @@ const api = {
   getFriendList: "getFriendList",
   createSession: "chat/addNewSession",
   deleteFriend: "deleteFriend",
-  clearChatRecord: "clearChatRecord",
+  clearChatRecord: "chat/clearChatRecord",
 };
 
 const baseUrl =
@@ -167,10 +167,13 @@ const deleteFriend = async (isDelete: boolean, type: string) => {
       getFriendList();
     }
   }
-  if (type === "clear") {
+  if (deleteType.value === "clear") {
     let result = await request({
       url: api.clearChatRecord,
       method: "POST",
+      data: {
+        uid: currentFriend.value?.uid,
+      },
     });
     if (result.data.code === 10000) {
       messageToastRef.value.showToast({
