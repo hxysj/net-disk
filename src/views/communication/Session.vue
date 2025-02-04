@@ -38,7 +38,9 @@
             @click="changeCurrentSession('0')"
             :class="'0' === currentSessionId ? 'active' : ''"
           >
-            <img src="" alt="" class="session-item-img" />
+            <span
+              class="icon iconfont icon-haoyoushenqing session-item-icon"
+            ></span>
             <div class="session-item-info">
               <div class="info-header">好友申请</div>
             </div>
@@ -330,6 +332,10 @@ const createSession = async (user_id: string) => {
   }).then((res: any) => {
     if (res.data.code === 10000) {
       router.push("/message/session?id=" + res.data.conversation_id);
+      // 如果路由参数不变的时候，路由不会重新渲染，所以需要手动触发路由更新
+      if (route.query.id === res.data.conversation_id) {
+        changeCurrentSession(res.data.conversation_id);
+      }
     }
   });
 };
@@ -486,6 +492,11 @@ watch(
       width: 50px;
       height: 50px;
       border-radius: 50%;
+    }
+    .session-item-icon {
+      font-size: 58px;
+      line-height: 50px;
+      color: rgb(37, 161, 239);
     }
     .session-item-info {
       font-size: 14px;

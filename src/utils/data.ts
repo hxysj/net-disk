@@ -113,7 +113,7 @@ export const MENUS = [
   },
   {
     path: "/message/session",
-    icon: "",
+    icon: "xiaoxi",
     name: "消息",
     menuCode: "communication",
     allShow: true,
