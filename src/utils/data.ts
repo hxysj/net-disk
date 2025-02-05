@@ -157,10 +157,12 @@ export const APPLY_STATUS = {
   0: "待通过",
   1: "已拒绝",
   2: "已通过",
+  3: "已失效",
 };
 
 export const APPLY_STATUS_COLOR = {
   0: "#409eff",
   1: "#F75000",
   2: "#67c23a",
+  3: "#909399",
 };

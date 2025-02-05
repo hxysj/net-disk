@@ -248,8 +248,13 @@ const sendMessage = (message: string) => {
       }
     };
 
-    socket.onclose = function () {
-      console.log("连接关闭");
+    socket.onclose = function (event) {
+      if (event.code === 4001) {
+        messageToast.value.showToast({
+          type: "error",
+          message: "你和对方还不是好友，请先添加好友再发送消息!",
+        });
+      }
       wsPool[currentSessionId.value] = null;
     };
 
@@ -374,8 +379,13 @@ onMounted(async () => {
       }
     };
 
-    socket.onclose = function () {
-      console.log("连接关闭");
+    socket.onclose = function (event) {
+      if (event.code === 4001) {
+        messageToast.value.showToast({
+          type: "error",
+          message: "你和对方还不是好友，请先添加好友再发送消息!",
+        });
+      }
       wsPool[currentSessionId.value] = null;
     };
 
@@ -515,6 +525,12 @@ watch(
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+  }
+  .friend-apply {
+    gap: 5px;
+    .info-header {
+      font-weight: bolder;
     }
   }
 }

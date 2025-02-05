@@ -159,12 +159,20 @@ const deleteFriend = async (isDelete: boolean, type: string) => {
         f_id: currentFriend.value?.f_id,
       },
     });
+    request({
+      url: api.clearChatRecord,
+      method: "POST",
+      data: {
+        uid: currentFriend.value?.uid,
+      },
+    });
     if (result.data.code === 10000) {
       messageToastRef.value.showToast({
         type: "success",
         message: "删除好友成功",
       });
       getFriendList();
+      currentFriend.value = null;
     }
   }
   if (deleteType.value === "clear") {

@@ -25,7 +25,12 @@
           <div class="name">{{ searchInfo.nick_name }}</div>
           <div class="email">邮箱：{{ searchInfo.email }}</div>
         </div>
-        <button class="user-btn" @click="addFriend(searchInfo.user_id)">
+        <button
+          :disabled="searchInfo.is_self"
+          :class="[searchInfo.is_self ? 'disabled' : '']"
+          class="user-btn"
+          @click="addFriend(searchInfo.user_id)"
+        >
           添加好友
         </button>
       </div>
@@ -208,6 +213,10 @@ const addFriend = async (uid: string) => {
         background-color: rgb(6, 167, 255);
         color: white;
         height: 35px;
+      }
+      .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
       .info {
         flex: 1;
