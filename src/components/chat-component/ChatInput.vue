@@ -34,7 +34,7 @@ onMounted(() => {
   picker.value = new EmojiButton.EmojiButton();
 
   picker.value.on("emoji", (emoji) => {
-    console.log("选中的表情", emoji);
+    // console.log("选中的表情", emoji);
     message.value += emoji.emoji;
   });
 });

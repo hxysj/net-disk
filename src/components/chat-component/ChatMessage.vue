@@ -5,7 +5,7 @@
       <div class="content">
         <div class="name">{{ userName }}</div>
         <div class="value">
-          {{ content }}
+          {{ emojify(content as string) }}
         </div>
       </div>
     </div>
@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { emojify } from "node-emoji";
 defineProps({
   avatar: {
     type: String,

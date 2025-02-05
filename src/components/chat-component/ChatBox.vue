@@ -23,7 +23,7 @@
 import ChatInput from "./ChatInput.vue";
 import { ref, nextTick, getCurrentInstance, PropType, watch } from "vue";
 import ChatMessage from "./ChatMessage.vue";
-
+import { unemojify } from "node-emoji";
 const props = defineProps({
   friend: {
     type: String,
@@ -61,7 +61,7 @@ const scrollContent = () => {
 const message = ref("");
 
 const submitMessage = () => {
-  emits("submit", message.value);
+  emits("submit", unemojify(message.value));
   message.value = "";
 };
 

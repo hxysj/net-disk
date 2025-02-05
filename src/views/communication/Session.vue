@@ -28,7 +28,7 @@
                 </div>
               </div>
               <div class="info-o">
-                {{ item.last_message_content }}
+                {{ emojify(item.last_message_content) }}
               </div>
             </div>
           </div>
@@ -149,6 +149,7 @@ import { parseToken, formatTime } from "@/utils/utils";
 import { APPLY_STATUS, APPLY_STATUS_COLOR } from "@/utils/data";
 import { useRoute, useRouter } from "vue-router";
 import MessageToast from "@/components/message/MessageToast.vue";
+import { emojify } from "node-emoji";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
