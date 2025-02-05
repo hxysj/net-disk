@@ -1,22 +1,22 @@
 /// <reference types="vite/client" />
 // 这段代码告诉 TypeScript，所有以 .vue 结尾的文件都是 Vue 组件，可以通过 import 语句进行导入。这样做通常可以解决无法识别模块的问题。
-declare module '*.vue' {
-    import { Component } from 'vue'; const component: Component; export default component;
+declare module "*.vue" {
+  import { Component } from "vue";
+  const component: Component;
+  export default component;
 }
 
-
 // vite-env.d.ts 或者其他类型声明文件
-declare module '@highlightjs/vue-plugin' {
-  import { Plugin } from 'vue';
+declare module "@highlightjs/vue-plugin" {
+  import { Plugin } from "vue";
   const plugin: Plugin;
   export default plugin;
 }
 
 // 声明bootstrap
-declare module 'bootstrap'
+declare module "bootstrap";
 
-
-declare module 'APlayer'
+declare module "APlayer";
 
 declare class Hls {
   constructor(config?: HlsConfig);
@@ -27,36 +27,64 @@ declare class Hls {
 }
 
 // 手动声明 utils文件
-declare module '@/utils/utils' {
-  export function formatFileSize(fileSizeInB:number):string;
+declare module "@/utils/utils" {
+  export function formatFileSize(fileSizeInB: number): string;
   export function getCurrentFormattedTime(): string;
-  export function parseToken(token:string): any;
-  // 根据你的 utils.ts 中的实际导出来添加其他函数或变量的声明
+  export function parseToken(token: string): any;
+  export function formatTime(
+    targetTime: string | Date,
+    language: "zh" | "en" = "zh"
+  ): string;
 }
 
-declare module '@/utils/request'{
-  export default request as AxiosInstance
+declare module "@/utils/request" {
+  export default request as AxiosInstance;
 }
 
-declare module '@/ts/cateGoryInfo' {
+declare module "@/ts/cateGoryInfo" {
   export default {
-    "all": {
-      "accept":string
+    all: {
+      accept: string,
     },
-    "video": {
-      "accept": string
+    video: {
+      accept: string,
     },
-    "music": {
-      "accept": string
+    music: {
+      accept: string,
     },
-    "image": {
-      "accept": string
+    image: {
+      accept: string,
     },
-    "doc": {
-      "accept": string
+    doc: {
+      accept: string,
     },
-    "others": {
-      "accept": string
-    }
+    others: {
+      accept: string,
+    },
   };
+}
+
+// src/utils/data.d.ts
+declare module "@/utils/data" {
+  export const STATUS: {
+    [key: string]: {
+      value: string;
+      icon: string;
+      desc: string;
+      color?: string;
+    };
+  };
+  export const APPLY_STATUS: {
+    [key: string]: string;
+  };
+  export const APPLY_STATUS_COLOR: {
+    [key: string]: string;
+  };
+}
+
+// src/utils/db.d.ts
+declare module "@/utils/db" {
+  export function addDataToIDB(key: string, data: any): Promise<void>;
+  export function getDataFromIDB(key: string): Promise<any>;
+  export function deleteDataFromIDB(key: string): Promise<void>;
 }

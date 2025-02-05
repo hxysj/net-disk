@@ -42,7 +42,12 @@
             }}
           </td>
           <td>{{ row.joinTime.split(".")[0].replace("T", " ") }}</td>
-          <td>{{ row.lastLoginTime.split(".")[0].replace("T", " ") }}</td>
+          <td>
+            {{
+              row.lastLoginTime &&
+              row.lastLoginTime.split(".")[0].replace("T", " ")
+            }}
+          </td>
           <td class="changeStatus">
             <span v-if="row.status" style="color: #569261">启用</span>
             <span v-else class="text-danger">禁用</span>
