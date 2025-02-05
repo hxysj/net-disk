@@ -463,6 +463,7 @@ watch(
       padding: 15px;
       background-color: rgba(0, 0, 0, 0.05);
       height: 100%;
+      overflow-y: auto;
       .friend-apply-box-item {
         background-color: white;
         border-radius: 10px;
