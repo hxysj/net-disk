@@ -4,6 +4,11 @@
       <div class="title">{{ friend }}</div>
     </div>
     <div class="content" ref="contentRef">
+      <Loadding ref="loadding"></Loadding>
+      <div class="show-more" @click="loadingMore" v-if="isLoadMore">
+        点击加载更多
+      </div>
+      <div class="show-more" v-else>到底了</div>
       <ChatMessage
         v-for="(item, index) in messageList"
         :key="index"
@@ -24,6 +29,8 @@ import ChatInput from "./ChatInput.vue";
 import { ref, nextTick, getCurrentInstance, PropType, watch } from "vue";
 import ChatMessage from "./ChatMessage.vue";
 import { unemojify } from "node-emoji";
+import Loadding from "@/components/Loadding.vue";
+
 const props = defineProps({
   friend: {
     type: String,
@@ -46,11 +53,13 @@ const props = defineProps({
     required: true,
   },
 });
-const emits = defineEmits(["submit"]);
+const loadding = ref();
+const emits = defineEmits(["submit", "showMore"]);
 const contentRef = ref<HTMLElement | null>(null);
 const baseUrl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 
+const isLoadMore = defineModel("showMore");
 const scrollContent = () => {
   nextTick(() => {
     const element = contentRef.value as HTMLElement;
@@ -65,9 +74,21 @@ const submitMessage = () => {
   message.value = "";
 };
 
+const isLoadingMore = ref(false);
+const loadingMore = () => {
+  emits("showMore");
+  isLoadingMore.value = true;
+  loadding.value.showLoadding();
+};
+
 watch(
   () => props.messageList,
   () => {
+    if (isLoadingMore.value) {
+      isLoadingMore.value = false;
+      loadding.value.closeLoadding();
+      return;
+    }
     scrollContent();
   },
   {
@@ -99,6 +120,14 @@ watch(
   .content {
     flex: 1;
     overflow: auto;
+    .show-more {
+      display: flex;
+      justify-content: center;
+      font-size: 14px;
+      margin: 10px;
+      cursor: pointer;
+      color: rgb(0, 0, 0, 0.5);
+    }
   }
   .content::-webkit-scrollbar {
     width: 4px;

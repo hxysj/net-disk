@@ -62,6 +62,10 @@ const handleKeydown = (e: KeyboardEvent) => {
     display: flex;
     align-items: center;
     padding: 5px;
+    .emoji-button {
+      border: none;
+      background-color: white;
+    }
   }
   .input-sr {
     .text-input {

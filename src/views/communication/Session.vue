@@ -57,7 +57,9 @@
           sessionList.find((item) => item.conversation_id === currentSessionId)
             ?.nick_name
         "
+        v-model:showMore="isLoadingMore"
         @submit="sendMessage"
+        @showMore="getMessageList"
       />
       <div
         v-else-if="sessionType === 'friendApply'"
@@ -135,6 +137,11 @@
           </div>
         </div>
       </div>
+      <div v-else class="no-friend">
+        <NotData :imgWidth="100">
+          <template #msg>与好友分享你的文件吧</template>
+        </NotData>
+      </div>
     </div>
   </div>
   <MessageToast ref="messageToast" />
@@ -150,12 +157,13 @@ import { APPLY_STATUS, APPLY_STATUS_COLOR } from "@/utils/data";
 import { useRoute, useRouter } from "vue-router";
 import MessageToast from "@/components/message/MessageToast.vue";
 import { emojify } from "node-emoji";
+import NotData from "@/components/NotData.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
 
 const currentUser = parseToken(localStorage.getItem("token") as string);
-
+const isLoadingMore = ref(true);
 const imgBaseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl + "media/";
 const api = {
@@ -189,7 +197,8 @@ const changeCurrentSession = (id: string) => {
     return;
   }
   sessionType.value = "session";
-  getMessageList();
+  isLoadingMore.value = true;
+  getMessageList(true);
 };
 
 interface messageType {
@@ -265,15 +274,33 @@ const sendMessage = (message: string) => {
 };
 
 // 获取会话消息
-const getMessageList = async () => {
+const getMessageList = async (init = false) => {
+  // 已经加载的聊天记录在初始化的时候不需要重新发送请求，直接显示
+  if (init && sessionMessage.value[currentSessionId.value]?.length) {
+    return;
+  }
   let result = await request({
     url: api.getMessageList,
     method: "GET",
     params: {
       session_id: currentSessionId.value,
+      num:
+        sessionMessage.value[currentSessionId.value]?.length && !init
+          ? sessionMessage.value[currentSessionId.value].length
+          : 0,
     },
   });
-  sessionMessage.value[currentSessionId.value] = result.data.list;
+  if (result.data.list.length === 0) {
+    isLoadingMore.value = false;
+  }
+  if (init) {
+    sessionMessage.value[currentSessionId.value] = result.data.list;
+  } else {
+    sessionMessage.value[currentSessionId.value] = [
+      ...result.data.list,
+      ...(sessionMessage.value[currentSessionId.value] || []),
+    ];
+  }
 };
 
 // 处理好友申请
@@ -442,6 +469,7 @@ watch(
       padding: 15px;
       background-color: rgba(0, 0, 0, 0.05);
       height: 100%;
+      overflow-y: auto;
       .friend-apply-box-item {
         background-color: white;
         border-radius: 10px;
@@ -472,6 +500,15 @@ watch(
           }
         }
       }
+    }
+    .friend-apply-box::-webkit-scrollbar {
+      width: 4px;
+    }
+    .friend-apply-box::-webkit-scrollbar-thumb {
+      background-color: rgb(185, 185, 185);
+    }
+    .no-friend {
+      height: 100%;
     }
   }
 }
@@ -524,6 +561,7 @@ watch(
         color: rgba(0, 0, 0, 0.5);
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }

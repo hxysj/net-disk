@@ -546,10 +546,19 @@ getUseSpace();
         .card-body {
           min-height: 300px;
           padding: 0px;
+          max-height: 500px;
+          overflow-y: auto;
+        }
+        .card-body::-webkit-scrollbar {
+          width: 4px;
+        }
+        .card-body::-webkit-scrollbar-thumb {
+          background-color: #e6e5e5;
         }
         .not-data {
           width: 100%;
           text-align: center;
+          margin: auto;
         }
       }
     }
