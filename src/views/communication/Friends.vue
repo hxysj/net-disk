@@ -70,6 +70,11 @@
           <span class="value">{{ currentFriend?.email }}</span>
         </div>
       </div>
+      <div v-else class="no-friend">
+        <NotData :imgWidth="100">
+          <template #msg> 简单操作即可分享文件 </template>
+        </NotData>
+      </div>
     </div>
   </div>
   <MessageModal ref="messageModalRef" @submit="deleteFriend(true, '')" />
@@ -83,6 +88,7 @@ import CommunicationSide from "./CommunicationSide.vue";
 import { useRouter } from "vue-router";
 import MessageModal from "@/components/message/MessageModal.vue";
 import MessageToast from "@/components/message/MessageToast.vue";
+import NotData from "@/components/NotData.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
@@ -274,6 +280,10 @@ onMounted(() => {
           color: rgb(150, 150, 150);
         }
       }
+    }
+    .no-friend {
+      width: 100%;
+      background-color: white;
     }
   }
 }

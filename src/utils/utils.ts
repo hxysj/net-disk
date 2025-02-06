@@ -224,3 +224,31 @@ function formatFullDate(date: Date, isEnglish: boolean = false): string {
   }
   return `${year}年${month}月${day}日`;
 }
+
+// 用来解析传输内容是否为分享链接格式
+export function isValidShareLink(content: string): {
+  isShareLink: boolean;
+  shareLink?: string;
+  code?: string;
+} {
+  // 链接内容的格式是链接:http://localhost:1024/share/c0f8353d-736e-45ee-9a30-a9772deceaa9 提取码:AKDMZ
+  const regex = /^链接:(https?:\/\/[^\s]+)\s+提取码:([A-Za-z0-9]+)$/;
+  const match = content.match(regex);
+  if (match) {
+    return {
+      isShareLink: true,
+      shareLink: match[1],
+      code: match[2],
+    };
+  }
+  return {
+    isShareLink: false,
+  };
+}
+
+// 解析字符串中的链接，用a标签包裹
+export function wrappLinksWithATags(text: string) {
+  // 正则匹配 http:// 或 https:// 起始的链接，支持带端口、路径、参数等
+  const urlRegex = /(https?:\/\/[^\s]+)/g; // 使用 <a> 标签绕过匹配到的链接
+  return text.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+}

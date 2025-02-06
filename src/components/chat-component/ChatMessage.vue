@@ -4,9 +4,18 @@
       <img :src="avatar" alt="" class="avatar" />
       <div class="content">
         <div class="name">{{ userName }}</div>
-        <div class="value">
-          {{ emojify(content as string) }}
-        </div>
+        <template v-if="isValidShareLink(content as string).isShareLink">
+          <PreviewShare
+            :link="isValidShareLink(content as string).shareLink"
+            :code="isValidShareLink(content as string).code"
+          />
+        </template>
+        <div
+          class="value"
+          v-else
+          :style="{ 'align-self': isSelf ? 'flex-end' : 'flex-start' }"
+          v-html="wrappLinksWithATags(emojify(content as string))"
+        ></div>
       </div>
     </div>
   </div>
@@ -14,6 +23,9 @@
 
 <script setup lang="ts">
 import { emojify } from "node-emoji";
+import { isValidShareLink, wrappLinksWithATags } from "../../utils/utils";
+import PreviewShare from "@/components/share-preview/PreviewShare.vue";
+
 defineProps({
   avatar: {
     type: String,
@@ -55,6 +67,8 @@ defineProps({
       color: white;
       max-width: 300px;
       word-wrap: break-word;
+      white-space: pre-line;
+      text-align: left;
     }
     .value::before {
       content: "";

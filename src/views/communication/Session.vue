@@ -137,6 +137,11 @@
           </div>
         </div>
       </div>
+      <div v-else class="no-friend">
+        <NotData :imgWidth="100">
+          <template #msg>与好友分享你的文件吧</template>
+        </NotData>
+      </div>
     </div>
   </div>
   <MessageToast ref="messageToast" />
@@ -152,6 +157,7 @@ import { APPLY_STATUS, APPLY_STATUS_COLOR } from "@/utils/data";
 import { useRoute, useRouter } from "vue-router";
 import MessageToast from "@/components/message/MessageToast.vue";
 import { emojify } from "node-emoji";
+import NotData from "@/components/NotData.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
@@ -495,6 +501,15 @@ watch(
         }
       }
     }
+    .friend-apply-box::-webkit-scrollbar {
+      width: 4px;
+    }
+    .friend-apply-box::-webkit-scrollbar-thumb {
+      background-color: rgb(185, 185, 185);
+    }
+    .no-friend {
+      height: 100%;
+    }
   }
 }
 .session-left {
@@ -546,6 +561,7 @@ watch(
         color: rgba(0, 0, 0, 0.5);
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }
