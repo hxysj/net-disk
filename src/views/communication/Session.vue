@@ -222,6 +222,8 @@ interface FriendApplyType {
 const friendApplyList = ref<FriendApplyType[]>([]);
 
 const wsPool: any = {};
+const websocketUrl =
+  getCurrentInstance()?.appContext.config.globalProperties.websocketUrl;
 const sendMessage = (message: string) => {
   if (wsPool[currentSessionId.value]) {
     wsPool[currentSessionId.value].send(message);
@@ -231,9 +233,7 @@ const sendMessage = (message: string) => {
       token: localStorage.getItem("token") as string,
     });
     const socket = new WebSocket(
-      `ws://127.0.0.1:8001/ws/message/${
-        currentSessionId.value
-      }/?${params.toString()}`
+      `${websocketUrl}/message/${currentSessionId.value}/?${params.toString()}`
     );
     wsPool[currentSessionId.value] = socket;
 
@@ -386,9 +386,7 @@ onMounted(async () => {
       token: localStorage.getItem("token") as string,
     });
     const socket = new WebSocket(
-      `ws://127.0.0.1:8001/ws/message/${
-        item.conversation_id
-      }/?${params.toString()}`
+      `${websocketUrl}/message/${item.conversation_id}/?${params.toString()}`
     );
     wsPool[item.conversation_id] = socket;
 

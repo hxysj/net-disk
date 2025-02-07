@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, getCurrentInstance } from "vue";
 import { formatFileSize } from "@/utils/utils";
 import { STATUS } from "@/utils/data";
 import NotData from "@/components/NotData.vue";
@@ -130,6 +130,8 @@ const api = {
   cancelUpload: "file/cancelUpload",
   pauseUploader: "file/pauseUploader",
 };
+const websocketUrl =
+  getCurrentInstance()?.appContext.config.globalProperties.websocketUrl;
 
 //文件列表
 const fileList = ref<fileItemType[]>([]);
@@ -296,7 +298,7 @@ const uploadFile: (
     file_id: fileId,
     token: localStorage.getItem("token") as string,
   });
-  const ws = new WebSocket(`ws://127.0.0.1:8001/ws/file/?${params.toString()}`);
+  const ws = new WebSocket(`${websocketUrl}/file/?${params.toString()}`);
 
   ws.onopen = async () => {
     for (let i = chunkIndex; i < chunks; i++) {
