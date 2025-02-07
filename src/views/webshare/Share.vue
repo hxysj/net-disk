@@ -256,9 +256,7 @@ const getShareInfo = async () => {
   }
 };
 getShareInfo();
-onMounted(() => {
-  loadDataList();
-});
+
 // -----------------------------------------------------------------------
 const columns = [
   {
