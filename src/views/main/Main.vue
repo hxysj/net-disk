@@ -266,7 +266,7 @@ import FolderSelect from "@/components/FolderSelect.vue";
 import Navigation from "@/components/Navigation.vue";
 import { dataListItem, mianResponseData } from "../../common/common";
 import cateGoryInfo from "@/ts/cateGoryInfo";
-import Preview from "@/components/Preview/Preview.vue";
+import Preview from "@/components/preview/Preview.vue";
 import ShareFile from "@/views/main/ShareFile.vue";
 import FileIcon from "@/components/FileIcon.vue";
 import MessageModal from "@/components/message/MessageModal.vue";

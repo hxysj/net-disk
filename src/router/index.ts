@@ -66,7 +66,7 @@ const routes = [
           needLogin: true,
           menuCode: "settings",
         },
-        component: () => import("@/views/admin/Filelist.vue"),
+        component: () => import("@/views/admin/FileList.vue"),
       },
       {
         path: "/message",
