@@ -20,10 +20,11 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASS }}
           script: |
+            set -e
             cd /root/net-disk
             git pull origin master
-            npm install
-            npm run build
-            mkdir ../test
-            mv dist/* ../test/
+            nvm use 20.11.0
+            npm install || exit 1
+            npm run build || exit 1
+            mv dist/* /usr/share/nginx/html/
             systemctl restart nginx
