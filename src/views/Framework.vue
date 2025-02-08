@@ -591,6 +591,7 @@ getUseSpace();
   display: flex;
   .left-side {
     display: flex;
+    z-index: 2;
     height: 100%;
     gap: 5px;
     .menu-list {
