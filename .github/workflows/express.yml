@@ -26,5 +26,5 @@ jobs:
             nvm use 20.11.0
             npm install || exit 1
             npm run build || exit 1
-            mv dist/* /usr/share/nginx/html/
+            rsync -av --delete dist/ /usr/share/nginx/html/
             systemctl restart nginx
