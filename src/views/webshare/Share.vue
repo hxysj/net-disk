@@ -165,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, getCurrentInstance, nextTick, onMounted } from "vue";
+import { ref, getCurrentInstance, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Navigation from "@/components/Navigation.vue";
 import Table from "@/components/Table.vue";

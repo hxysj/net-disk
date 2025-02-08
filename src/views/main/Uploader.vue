@@ -133,6 +133,10 @@ const api = {
 const websocketUrl =
   getCurrentInstance()?.appContext.config.globalProperties.websocketUrl;
 
+const encryptionKey =
+  getCurrentInstance()?.appContext.config.globalProperties.$encryptionKey;
+const ivKey = getCurrentInstance()?.appContext.config.globalProperties.$iv;
+
 //文件列表
 const fileList = ref<fileItemType[]>([]);
 // 控制文件请求是否被取消
@@ -336,15 +340,13 @@ const uploadFile: (
       const chunkFileArrayBuffer = await chunkFile.arrayBuffer();
       // 将 ArrayBuffer 转换为 WordArray
       const wordArray = CryptoJS.lib.WordArray.create(chunkFileArrayBuffer);
-      // 密钥和初始化向量（IV）
-      const encryptionKey = "secret-key123456"; // 16 字节
-      const iv = CryptoJS.enc.Utf8.parse("1234567890123456"); // 16 字节的 IV
+
       // 使用 AES 加密
       const encrypted = CryptoJS.AES.encrypt(
         wordArray,
         CryptoJS.enc.Utf8.parse(encryptionKey),
         {
-          iv: iv,
+          iv: CryptoJS.enc.Utf8.parse(ivKey),
           padding: CryptoJS.pad.Pkcs7,
           mode: CryptoJS.mode.CBC,
         }

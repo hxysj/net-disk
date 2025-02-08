@@ -19,6 +19,10 @@ app.config.globalProperties.$baseurl = "http://127.0.0.1:8000/";
 app.config.globalProperties.websocketUrl = "ws://127.0.0.1:8001/ws";
 // app.config.globalProperties.$baseurl = "http://121.43.41.254/";
 // app.config.globalProperties.websocketUrl = "ws://121.43.41.254/ws";
+
+app.config.globalProperties.$encryptionKey = "secret-key123456";
+app.config.globalProperties.$iv = "1234567890123456";
+
 app.use(router);
 app.use(HljsVuePlugin);
 app.use(VueCookie);
