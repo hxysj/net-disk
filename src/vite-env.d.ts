@@ -16,7 +16,7 @@ declare module "@highlightjs/vue-plugin" {
 // 声明bootstrap
 declare module "bootstrap";
 
-declare module "APlayer";
+declare module "aplayer";
 
 declare class Hls {
   constructor(config?: HlsConfig);
