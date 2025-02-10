@@ -13,6 +13,8 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import APlayer from "aplayer";
 import "aplayer/dist/APlayer.min.css";
+import { parseBlob } from "music-metadata";
+import axios from "axios";
 
 // 父组件传递过来的文件链接
 const props = defineProps({
@@ -26,24 +28,31 @@ const props = defineProps({
 
 const playerRef = ref();
 const player = ref();
-
-onMounted(() => {
+let audioUrl = "";
+onMounted(async () => {
+  let { data: music_blob } = await axios.get(props.url as string, {
+    responseType: "blob",
+  });
+  let {
+    common: { album, artist },
+  } = await parseBlob(music_blob);
+  // 创建临时链接，不对服务器重复发送请求
+  audioUrl = URL.createObjectURL(music_blob);
   player.value = new APlayer({
     container: playerRef.value,
-    audio: {
-      // 链接
-      url: props.url,
-      // 名称
-      name: props.fileName,
-      // 封面
-      cover: new URL("@/assets/music_cover.jpg", import.meta.url).href,
-      //作者
-      artist: "",
-    },
+    audio: [
+      {
+        url: audioUrl,
+        name: album,
+        cover: new URL("@/assets/music_cover.jpg", import.meta.url).href,
+        artist: artist,
+      },
+    ],
   });
 });
 
 onUnmounted(() => {
+  URL.revokeObjectURL(audioUrl);
   player.value.destroy();
 });
 </script>
