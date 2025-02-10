@@ -359,7 +359,7 @@ const submitForm = ref();
 // ----------------------------------------------------------------
 // 账号规则  密码规则
 let regName = /^[a-zA-Z0-9]{3,9}$/;
-let regPassword = /^[a-zA-Z0-9|!|?|.|@|%|]{6,9}$/;
+let regPassword = /^[a-zA-Z0-9!@#$%^&*]{6,9}$/;
 let regEmail = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,6}$/;
 const usernameIpt = ref();
 const passwordIpt = ref();
@@ -513,8 +513,13 @@ const validateFrom: (type: string) => boolean = (type) => {
   if (type === "pwd" || type === "all") {
     if (!userForm.value.password) {
       errors.value.password = "密码不能为空！";
+    } else if (
+      userForm.value.password.length < 6 ||
+      userForm.value.password.length > 9
+    ) {
+      errors.value.password = "密码的长度为6-9位";
     } else if (!regPassword.test(userForm.value.password)) {
-      errors.value.password = "密码的长度为6-9位！";
+      errors.value.password = "密码应该由字母、数字、!@#$%^&*组成！";
     } else {
       delete errors.value.password;
     }
