@@ -67,7 +67,7 @@
         :columns="columns"
         :tableData="tableData"
         :fetch="getAllFolder"
-        :initFecth="true"
+        :initFecth="false"
         :createNewFolder="newFolder.newEdit"
         ref="dataTable"
         @selectDataList="setSelectList"

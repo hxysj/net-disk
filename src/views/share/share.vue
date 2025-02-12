@@ -133,34 +133,7 @@ const tableData = ref<shareResponseData>({
   pageSize: 9,
   pageNo: 1,
   pageTotal: 1,
-  list: [
-    {
-      fileCategory: 2,
-      fileCover: null,
-      fileId: "sdasdssada",
-      fileName: "小船.mp3",
-      fileType: 2,
-      folderType: 0,
-      shareId: "12213",
-      shareTime: "2024-09-10 10:24:11",
-      expireTime: "7",
-      showCount: 0,
-      code: "123sa",
-    },
-    {
-      fileCategory: 2,
-      fileCover: null,
-      fileId: "sdasdssada",
-      fileName: "小船.mp3",
-      fileType: 2,
-      folderType: 0,
-      shareId: "12sad213",
-      shareTime: "2024-09-10 10:24:11",
-      expireTime: "ever",
-      showCount: 0,
-      code: "123sa",
-    },
-  ],
+  list: [],
 });
 // -----------------------------------------------------------
 // 当前选中的list
