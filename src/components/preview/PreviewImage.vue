@@ -78,8 +78,6 @@ const rotation = ref(0);
 }
 .changeImg {
   position: absolute;
-  // background-color: rgba(0,0,0,0.1);
-  // transform: translate(-50%, -50%);
   width: 100%;
   bottom: 50px;
   display: flex;
