@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { dataListItem, fileListItem } from "../../common/common";
-import { ref, computed, getCurrentInstance } from "vue";
+import { ref, getCurrentInstance } from "vue";
 import Window from "@/components/Window.vue";
 import PreviewVideo from "@/components/preview/PreviewVideo.vue";
 import PreviewDoc from "@/components/preview/PreviewDoc.vue";
