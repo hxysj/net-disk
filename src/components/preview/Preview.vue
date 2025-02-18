@@ -70,12 +70,12 @@ type file_url_map_key = 0 | 1 | 2;
 // 要展示的图片的链接
 // imageUrl是全局定义的基本地址 + fileCove是图片在服务器中的地址 = 图片的完整地址
 // _. 的链接是缩略图   直接 .的是大图
-const imageUrl = computed(() => {
-  return (
-    baseurl +
-    fileInfo?.value?.fileCover?.replace("_.", ".").replace("cover", "file")
-  );
-});
+// const imageUrl = computed(() => {
+//   return (
+//     baseurl +
+//     fileInfo?.value?.fileCover?.replace("_.", ".").replace("cover", "file")
+//   );
+// });
 // ----------------------------------------------------------------------------
 //文件信息
 const fileInfo = ref<dataListItem>();
