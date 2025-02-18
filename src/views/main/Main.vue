@@ -125,7 +125,11 @@
                     data.status === 2
                   "
                 >
-                  <FileIcon :cover="data.fileCover" :width="32"></FileIcon>
+                  <FileIcon
+                    :cover="data.fileCover"
+                    :width="32"
+                    :fileType="data.fileType"
+                  ></FileIcon>
                 </template>
                 <template v-else>
                   <!-- 如果是文件类型 -->
@@ -264,7 +268,7 @@ import Table from "@/components/Table.vue";
 import { formatFileSize } from "@/utils/utils";
 import FolderSelect from "@/components/FolderSelect.vue";
 import Navigation from "@/components/Navigation.vue";
-import { dataListItem, mianResponseData } from "../../common/common";
+import { dataListItem, mainResponseData } from "../../common/common";
 import cateGoryInfo from "@/ts/cateGoryInfo";
 import Preview from "@/components/preview/Preview.vue";
 import ShareFile from "@/views/main/ShareFile.vue";
@@ -306,7 +310,7 @@ const api = {
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 // 页面展示的数据
-const tableData = ref<mianResponseData>({
+const tableData = ref<mainResponseData>({
   pageSize: 9,
   pageNo: 1,
   pageTotal: 10,

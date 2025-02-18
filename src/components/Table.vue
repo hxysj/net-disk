@@ -42,7 +42,7 @@
 import { computed, PropType, onMounted } from "vue";
 import {
   dataListItem,
-  mianResponseData,
+  mainResponseData,
   userItem,
   recycleItem,
   recycleResponseData,
@@ -66,7 +66,7 @@ const props = defineProps({
   },
   tableData: {
     type: Object as PropType<
-      | mianResponseData
+      | mainResponseData
       | recycleResponseData
       | shareResponseData
       | userResponseData

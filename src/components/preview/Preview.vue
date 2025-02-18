@@ -1,10 +1,5 @@
 <template>
   <div>
-    <PreviewImage
-      ref="previewImage"
-      :imageUrl="imageUrl"
-      v-if="fileInfo?.fileType === 3"
-    ></PreviewImage>
     <Window
       :show="windowShow"
       @close="closeWindow"
@@ -36,9 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import PreviewImage from "@/components/preview/PreviewImage.vue";
 import { dataListItem, fileListItem } from "../../common/common";
-import { ref, nextTick, computed, getCurrentInstance } from "vue";
+import { ref, computed, getCurrentInstance } from "vue";
 import Window from "@/components/Window.vue";
 import PreviewVideo from "@/components/preview/PreviewVideo.vue";
 import PreviewDoc from "@/components/preview/PreviewDoc.vue";
@@ -47,7 +41,6 @@ import PreviewPdf from "@/components/preview/PreviewPdf.vue";
 import PreviewTxt from "@/components/preview/PreviewTxt.vue";
 import PreviewMusic from "@/components/preview/PreviewMusic.vue";
 import PreviewDownload from "@/components/preview/PreviewDownload.vue";
-const previewImage = ref();
 
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
@@ -92,9 +85,7 @@ const openPreview = (data: dataListItem | fileListItem, showPort: number) => {
   // console.log(data)
   // 等于图片
   if (data.fileCategory === 3) {
-    nextTick(() => {
-      previewImage.value.show();
-    });
+    return;
   } else {
     windowShow.value = true;
     // console.log(data)

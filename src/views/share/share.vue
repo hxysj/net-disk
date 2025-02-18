@@ -37,7 +37,11 @@
               <div class="filename-left">
                 <!-- 如果是视频类型，则有封面，不使用图标 -->
                 <template v-if="data.fileType === 3 || data.fileType === 1">
-                  <FileIcon :cover="data.fileCover" :width="32"></FileIcon>
+                  <FileIcon
+                    :cover="data.fileCover"
+                    :width="32"
+                    :fileType="data.fileType"
+                  ></FileIcon>
                 </template>
                 <template v-else>
                   <!-- 如果是文件类型 -->

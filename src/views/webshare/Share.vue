@@ -111,7 +111,11 @@
                         data.status === 2
                       "
                     >
-                      <FileIcon :cover="data.fileCover" :width="32"></FileIcon>
+                      <FileIcon
+                        :cover="data.fileCover"
+                        :width="32"
+                        :fileType="data.fileType"
+                      ></FileIcon>
                     </template>
                     <template v-else>
                       <!-- 如果是文件类型 -->
@@ -172,7 +176,7 @@ import Table from "@/components/Table.vue";
 import FileIcon from "@/components/FileIcon.vue";
 import Preview from "@/components/preview/Preview.vue";
 import { formatFileSize, parseToken } from "@/utils/utils";
-import { dataListItem, mianResponseData } from "../../common/common";
+import { dataListItem, mainResponseData } from "../../common/common";
 import request from "../../utils/request";
 import Loadding from "@/components/Loadding.vue";
 import MessageToast from "@/components/message/MessageToast.vue";
@@ -275,7 +279,7 @@ const columns = [
   },
 ];
 
-const tableData = ref<mianResponseData>({
+const tableData = ref<mainResponseData>({
   pageNo: 1,
   list: [],
   pageSize: 9,
