@@ -35,6 +35,7 @@ declare module "@/utils/utils" {
     targetTime: string | Date,
     language: "zh" | "en" = "zh"
   ): string;
+  export function generateUniqueId(): string;
 }
 
 declare module "@/utils/request" {

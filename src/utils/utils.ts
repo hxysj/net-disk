@@ -252,3 +252,10 @@ export function wrappLinksWithATags(text: string) {
   const urlRegex = /(https?:\/\/[^\s]+)/g; // 使用 <a> 标签绕过匹配到的链接
   return text.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
 }
+
+// 生成唯一id
+export function generateUniqueId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2);
+  return timestamp + random;
+}

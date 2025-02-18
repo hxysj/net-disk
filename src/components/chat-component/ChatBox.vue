@@ -2,6 +2,7 @@
   <div class="chat-box">
     <div class="header">
       <div class="title">{{ friend }}</div>
+      <slot name="headerOther"></slot>
     </div>
     <div class="content" ref="contentRef">
       <Loadding ref="loadding"></Loadding>
@@ -108,6 +109,7 @@ watch(
   .header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
     padding: 10px 15px;
     border-bottom: 1px solid rgb(233, 233, 233);

@@ -4,6 +4,21 @@
       <CommunicationSide>
         <template #default>
           <div
+            class="session-left-content-list-item"
+            :class="sessionType === 'ai' ? 'active' : ''"
+            @click="changeCurrentSession('-1')"
+          >
+            <img src="@/assets/deepSeek.png" alt="" class="session-item-img" />
+            <div class="session-item-info">
+              <div class="info-header">
+                <div>deepSeek</div>
+              </div>
+              <div class="info-o">
+                欢迎使用deepSeek，你可以与AI进行对话，让AI助力生活！
+              </div>
+            </div>
+          </div>
+          <div
             @click="changeCurrentSession(item.conversation_id)"
             class="session-left-content-list-item"
             v-for="item in sessionList"
@@ -50,17 +65,30 @@
     </div>
     <div class="session-right">
       <ChatBox
-        v-if="currentSessionId && sessionType === 'session'"
+        v-if="
+          (currentSessionId && sessionType === 'session') ||
+          sessionType === 'ai'
+        "
         :message-list="sessionMessage[currentSessionId]"
         :currentUser="currentUser"
         :friend="
-          sessionList.find((item) => item.conversation_id === currentSessionId)
-            ?.nick_name
+          sessionType === 'ai'
+            ? 'deepSeek'
+            : sessionList.find(
+                (item) => item.conversation_id === currentSessionId
+              )?.nick_name
         "
         v-model:showMore="isLoadingMore"
         @submit="sendMessage"
         @showMore="getMessageList"
-      />
+      >
+        <template #headerOther>
+          <span
+            class="iconfont icon-del header-del"
+            @click="clearMessage()"
+          ></span>
+        </template>
+      </ChatBox>
       <div
         v-else-if="sessionType === 'friendApply'"
         class="friend-apply-box d-flex flex-column gap-2"
@@ -145,6 +173,7 @@
     </div>
   </div>
   <MessageToast ref="messageToast" />
+  <MessageModal ref="messageModal" @submit="clearMessage(true)"></MessageModal>
 </template>
 
 <script setup lang="ts">
@@ -152,12 +181,14 @@ import { ref, onMounted, getCurrentInstance, watch } from "vue";
 import CommunicationSide from "./CommunicationSide.vue";
 import ChatBox from "@/components/chat-component/ChatBox.vue";
 import request from "@/utils/request";
-import { parseToken, formatTime } from "@/utils/utils";
+import { parseToken, formatTime, generateUniqueId } from "@/utils/utils";
 import { APPLY_STATUS, APPLY_STATUS_COLOR } from "@/utils/data";
 import { useRoute, useRouter } from "vue-router";
 import MessageToast from "@/components/message/MessageToast.vue";
 import { emojify } from "node-emoji";
 import NotData from "@/components/NotData.vue";
+import OpenAI from "openai";
+import MessageModal from "@/components/message/MessageModal.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
@@ -173,6 +204,7 @@ const api = {
   setMessageRead: "chat/setMessageRead",
   getFriendApply: "getFriendApply",
   changeFriend: "changeFriend",
+  clearChatRecord: "chat/clearChatRecord",
 };
 const route = useRoute();
 const router = useRouter();
@@ -190,8 +222,14 @@ interface sessionType {
 const sessionList = ref<sessionType[]>([]);
 const currentSessionId = ref("");
 const sessionType = ref("session");
+const messageModal = ref();
 const changeCurrentSession = (id: string) => {
   currentSessionId.value = id;
+  if (id === "-1") {
+    sessionType.value = "ai";
+    getMessageList();
+    return;
+  }
   if (id === "0") {
     sessionType.value = "friendApply";
     return;
@@ -203,7 +241,11 @@ const changeCurrentSession = (id: string) => {
 
 interface messageType {
   content: string;
-  create_time: string;
+  create_time: string | Date;
+  user_id?: string;
+  nick_name?: string;
+  avatar?: string;
+  message_id?: string;
 }
 const sessionMessage = ref<{
   [key: string]: messageType[];
@@ -225,6 +267,10 @@ const wsPool: any = {};
 const websocketUrl =
   getCurrentInstance()?.appContext.config.globalProperties.websocketUrl;
 const sendMessage = (message: string) => {
+  if (sessionType.value === "ai") {
+    sendMessageAi(message);
+    return;
+  }
   if (wsPool[currentSessionId.value]) {
     wsPool[currentSessionId.value].send(message);
   } else {
@@ -273,8 +319,109 @@ const sendMessage = (message: string) => {
   }
 };
 
+const openai = new OpenAI({
+  apiKey: "******",
+  baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  dangerouslyAllowBrowser: true,
+});
+
+const sendMessageAi = async (message: string) => {
+  sessionMessage.value["-1"].push({
+    content: message,
+    create_time: new Date(),
+    user_id: currentUser.uid,
+    avatar: currentUser.avatar,
+    nick_name: currentUser.username,
+    message_id: generateUniqueId(),
+  });
+  localStorage.setItem(
+    `ai_message_${currentUser.uid}`,
+    JSON.stringify(sessionMessage.value["-1"])
+  );
+  let reasoningContent = ""; // 定义完整思考过程
+  let answerContent = ""; // 定义完整回复
+  let isAnswering = false; // 判断是否结束思考过程并开始回复
+  const completion = await openai.chat.completions.create({
+    model: "deepseek-r1",
+    messages: sessionMessage.value["-1"]?.map((item) => {
+      return {
+        role: item.user_id === currentUser.uid ? "user" : "assistant",
+        content: item.content,
+      };
+    }),
+    stream: true,
+  });
+  const ai_message_id = generateUniqueId();
+  let messageObj = {
+    content: ">>正在思考问题: ",
+    create_time: new Date(),
+    user_id: "deepSeek-ss-r1-0-openAPI-2-myTest-18",
+    avatar: "deepSeek.png",
+    nick_name: "deepSeek",
+    message_id: ai_message_id,
+  };
+  sessionMessage.value["-1"].push(messageObj);
+  localStorage.setItem(
+    `ai_message_${currentUser.uid}`,
+    JSON.stringify(sessionMessage.value["-1"])
+  );
+
+  for await (const chunk of completion) {
+    const delta = chunk.choices[0].delta;
+    // 检查是否有reasoning_content属性
+    if (!("reasoning_content" in delta)) {
+      continue;
+    }
+
+    // 处理空内容情况
+    if (!delta.reasoning_content && !delta.content) {
+      continue;
+    }
+    // 处理开始回答的情况
+    if (!delta.reasoning_content && !isAnswering) {
+      (
+        sessionMessage.value["-1"].find(
+          (item) => item.message_id === ai_message_id
+        ) as messageType
+      ).content = "思考完成，开始回答内容！";
+      isAnswering = true;
+    }
+
+    // 处理思考过程
+    if (delta.reasoning_content) {
+      reasoningContent += delta.reasoning_content;
+      (
+        sessionMessage.value["-1"].find(
+          (item) => item.message_id === ai_message_id
+        ) as messageType
+      ).content = reasoningContent;
+    }
+    // 处理回复内容
+    else if (delta.content) {
+      answerContent += delta.content;
+      (
+        sessionMessage.value["-1"].find(
+          (item) => item.message_id === ai_message_id
+        ) as messageType
+      ).content = answerContent;
+    }
+  }
+  localStorage.setItem(
+    `ai_message_${currentUser.uid}`,
+    JSON.stringify(sessionMessage.value["-1"])
+  );
+};
+
 // 获取会话消息
 const getMessageList = async (init = false) => {
+  if (sessionType.value === "ai") {
+    sessionMessage.value["-1"] =
+      JSON.parse(
+        localStorage.getItem(`ai_message_${currentUser.uid}`) as string
+      ) || [];
+    return;
+  }
+
   // 已经加载的聊天记录在初始化的时候不需要重新发送请求，直接显示
   if (init && sessionMessage.value[currentSessionId.value]?.length) {
     return;
@@ -329,7 +476,8 @@ const handleChangeFriend = async (f_id: string, status: number) => {
 
 // 清除会话消息计数
 const clearMessageCount = () => {
-  currentSessionId.value &&
+  currentSessionId.value != "-1" &&
+    currentSessionId.value &&
     ((
       sessionList.value.find(
         (item) => item.conversation_id === currentSessionId.value
@@ -371,6 +519,46 @@ const createSession = async (user_id: string) => {
       }
     }
   });
+};
+
+// 清除历史记录
+const clearMessage = async (del = false) => {
+  if (!del) {
+    messageModal.value.openMessage({
+      message: `你确定要删除该会话下的聊天记录吗？`,
+      title: "温馨提示！",
+    });
+    return;
+  }
+  if (sessionType.value === "ai") {
+    sessionMessage.value["-1"] = [];
+    localStorage.removeItem(`ai_message_${currentUser.uid}`);
+    messageToast.value.showToast({
+      type: "success",
+      message: "清空聊天记录成功",
+    });
+  } else {
+    let result = await request({
+      url: api.clearChatRecord,
+      method: "POST",
+      data: {
+        uid: sessionList.value.find(
+          (item) => item.conversation_id === currentSessionId.value
+        )?.user_id,
+      },
+    });
+    if (result.data.code === 10000) {
+      messageToast.value.showToast({
+        type: "success",
+        message: "清空聊天记录成功",
+      });
+      sessionMessage.value[currentSessionId.value] = [];
+      sessionList.value = sessionList.value.filter(
+        (item) => item.conversation_id != currentSessionId.value
+      );
+      currentSessionId.value = "";
+    }
+  }
 };
 
 onMounted(async () => {
@@ -431,6 +619,7 @@ onMounted(async () => {
 watch(
   () => sessionMessage.value,
   async () => {
+    if (currentSessionId.value === "-1" || !currentSessionId.value) return;
     clearMessageCount();
     await request({
       url: api.setMessageRead,
@@ -463,6 +652,13 @@ watch(
   .session-right {
     flex: 1;
     height: 100%;
+    .header-del {
+      cursor: pointer;
+      &:hover {
+        color: rgb(37, 161, 239);
+      }
+    }
+
     .friend-apply-box {
       padding: 15px;
       background-color: rgba(0, 0, 0, 0.05);
