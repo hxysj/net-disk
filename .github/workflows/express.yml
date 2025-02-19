@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASS }}
           source: "dist/*"
-          target: "/usr/share/nginx/html/"
+          target: "/usr/share/nginx/backup/"
 
       - name: Move files to target directory
         uses: appleboy/ssh-action@master
@@ -41,8 +41,9 @@ jobs:
           password: ${{ secrets.SERVER_PASS }}
           script: |
             set -e
-            mv /usr/share/nginx/html/dist/* /usr/share/nginx/html/
-
+            rm -rf /usr/share/nginx/html/*
+            mv /usr/share/nginx/backup/dist/* /usr/share/nginx/html/
+            rm -rf /usr/share/nginx/backup/dist
       - name: Restart nginx on server
         uses: appleboy/ssh-action@master
         with:
