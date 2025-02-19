@@ -382,12 +382,14 @@ const noShowOp: (data: dataListItem) => void = (data) => {
 };
 // ----------------------------------------------------------------------------------  // 下载文件
 const download = async (file: dataListItem) => {
-  console.log("点击下载文件", file.fileName);
   let result;
   try {
     result = await request({
       method: "GET",
       url: api.createDownloadUrl + "/" + file.fileId,
+      params: {
+        shareId: shareId,
+      },
     });
   } catch {
     messageToast.value.showToast({
@@ -564,7 +566,7 @@ const jump = () => {
     display: flex;
     justify-content: center;
     .body-content {
-      width: 800px;
+      width: 967px;
       .shareUser {
         padding: 10px 0;
         width: 100%;
