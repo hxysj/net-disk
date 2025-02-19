@@ -71,6 +71,14 @@
         </tr>
       </tbody>
     </table>
+    <div class="pagination">
+      <Pagination
+        :pageTotal="tableData.pageTotal"
+        :pageNo="tableData.pageNo"
+        :countShow="tableData.pageSize"
+        @changeNum="paginationChange"
+      />
+    </div>
     <MessageModal
       ref="messageModal"
       @submit="submitChangeStatus"
@@ -140,6 +148,7 @@ import MessageModal from "@/components/message/MessageModal.vue";
 import MessageToast from "@/components/message/MessageToast.vue";
 import Loadding from "@/components/Loadding.vue";
 import request from "../../utils/request";
+import Pagination from "@/components/Pagination.vue";
 const emit = defineEmits(["addFile"]);
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
@@ -321,6 +330,11 @@ const closeSpace = () => {
   };
 };
 // ----------------------------------------------------------------------------------------
+// 切换页码
+const paginationChange = (num: number) => {
+  tableData.value.pageNo = num;
+  loadDataList();
+};
 </script>
 
 <style scoped lang="scss">
@@ -369,6 +383,12 @@ const closeSpace = () => {
       cursor: pointer;
     }
   }
+}
+.pagination {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 @media (max-width: 930px) {
   .input-group {

@@ -282,7 +282,7 @@ const columns = [
 const tableData = ref<mainResponseData>({
   pageNo: 1,
   list: [],
-  pageSize: 9,
+  pageSize: 13,
   pageTotal: 1,
 });
 // 分享文件的根目录的pid - 从getshareInfo中获得

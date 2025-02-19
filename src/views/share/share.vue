@@ -134,7 +134,7 @@ const columns = [
 ];
 
 const tableData = ref<shareResponseData>({
-  pageSize: 9,
+  pageSize: 13,
   pageNo: 1,
   pageTotal: 1,
   list: [],

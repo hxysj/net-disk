@@ -14,11 +14,10 @@ import "highlight.js/lib/common";
 
 const app = createApp(App);
 
-// 定义全局变量 - 请求的基本连接
-// app.config.globalProperties.$baseurl = "http://127.0.0.1:8000/";
-// app.config.globalProperties.websocketUrl = "ws://127.0.0.1:8001/ws";
-app.config.globalProperties.$baseurl = "http://121.43.41.254/";
-app.config.globalProperties.websocketUrl = "ws://121.43.41.254/ws";
+// 使用环境变量设置请求的基本连接
+app.config.globalProperties.$baseurl = import.meta.env.VITE_APP_BASEURL;
+app.config.globalProperties.websocketUrl =
+  import.meta.env.VITE_APP_WEBSOCKET_URL;
 
 app.config.globalProperties.$encryptionKey = "secret-key123456";
 app.config.globalProperties.$iv = "1234567890123456";

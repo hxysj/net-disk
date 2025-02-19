@@ -123,7 +123,7 @@ const setSelectList = (rows: string[]) => {
 // ------------------------------------------------------------
 const tableData = ref<recycleResponseData>({
   list: [],
-  pageSize: 9,
+  pageSize: 13,
   pageNo: 1,
   pageTotal: 1,
 });

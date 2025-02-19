@@ -215,7 +215,7 @@ const loadDataList = async () => {
 // 表格数据
 const tableData = ref<fileListResponseData>({
   pageNo: 1,
-  pageSize: 9,
+  pageSize: 13,
   list: [],
   pageTotal: 1,
 });

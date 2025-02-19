@@ -311,7 +311,7 @@ const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 // 页面展示的数据
 const tableData = ref<mainResponseData>({
-  pageSize: 9,
+  pageSize: 13,
   pageNo: 1,
   pageTotal: 10,
   list: [],
@@ -614,7 +614,6 @@ const moveFolderDone: (obj: {
   pid: string;
   list: string[];
 }) => Promise<void> = async (obj) => {
-  // console.log(obj.list)
   // 调用接口，进行修改选中的文件的filePid
   let result = await request({
     method: "POST",
@@ -624,8 +623,13 @@ const moveFolderDone: (obj: {
       pid: obj.pid,
     },
   });
-  // console.log(result)
-  if (result.data.code !== 200) {
+  if (result.data.code == 4000) {
+    messageToast.value.showToast({
+      type: "error",
+      message: result.data.error,
+    });
+    return;
+  } else if (result.data.code !== 200) {
     messageToast.value.showToast({
       type: "error",
       message: "移动失败，请稍后再试！",
@@ -690,7 +694,7 @@ const navChange: (data: navBackData) => void = (data) => {
   const { categoryId, curFolder } = data;
   currentFolder.value = curFolder;
   category.value = categoryId;
-  // console.log(category.value)
+  tableData.value.pageNo = 1;
   // 获取当前目录下的文件
   getAllFolder();
 };
