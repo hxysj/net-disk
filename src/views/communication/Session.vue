@@ -766,4 +766,15 @@ watch(
     }
   }
 }
+@media (max-width: 768px) {
+  .session-left {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: white;
+    height: 100%;
+    z-index: 1;
+  }
+}
 </style>

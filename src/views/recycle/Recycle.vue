@@ -62,7 +62,7 @@
                     :fileType="0"
                   ></FileIcon>
                 </template>
-                <div>
+                <div class="name">
                   {{ data.fileName }}
                 </div>
               </div>

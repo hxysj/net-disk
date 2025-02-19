@@ -129,7 +129,9 @@
                         :fileType="0"
                       ></FileIcon>
                     </template>
-                    {{ data.fileName }}
+                    <div class="name">
+                      {{ data.fileName }}
+                    </div>
                   </div>
                   <div v-show="data.showOp" class="filename-right">
                     <span

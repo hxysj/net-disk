@@ -81,7 +81,7 @@
                 <!-- 如果是目录类型 -->
                 <FileIcon v-if="data.folderType === 1" :fileType="0"></FileIcon>
               </template>
-              <div>
+              <div class="name">
                 {{ data.fileName }}
               </div>
               <span v-if="data.status === 0" class="transfer transfer-status"

@@ -63,9 +63,9 @@ defineProps({
     .value {
       padding: 10px;
       border-radius: 5px;
-      background-color: #06a7ff;
+      background-color: #3ab7fa;
       color: white;
-      max-width: 300px;
+      max-width: 500px;
       word-wrap: break-word;
       white-space: pre-line;
       text-align: left;
@@ -81,6 +81,29 @@ defineProps({
     width: 40px;
     height: 40px;
     border-radius: 50%;
+  }
+}
+
+@media (max-width: 930px) {
+  .message {
+    .info {
+      .value {
+        max-width: 300px;
+      }
+    }
+  }
+}
+@media (max-width: 557px) {
+  .message {
+    .info {
+      width: 100%;
+      .content {
+        width: 100%;
+      }
+      .value {
+        max-width: 70%;
+      }
+    }
   }
 }
 .flex-start {

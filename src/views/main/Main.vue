@@ -143,7 +143,7 @@
                     :fileType="0"
                   ></FileIcon>
                 </template>
-                <div v-if="!data.showEdit">
+                <div v-if="!data.showEdit" class="name">
                   {{ data.fileName }}
                 </div>
                 <div class="edit container flex-nowarp" v-else>
