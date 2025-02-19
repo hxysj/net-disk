@@ -2,10 +2,15 @@
 export const formatFileSize: (fileSizeInB: number) => string = (
   fileSizeInB
 ) => {
+  const fileSizeInTB: number = eval(
+    fileSizeInB + "/ (1024 * 1024 * 1024 * 1024)"
+  );
   const fileSizeInGB: number = eval(fileSizeInB + "/ (1024 * 1024 * 1024)");
   const fileSizeInMB = eval(fileSizeInB + "/ (1024 * 1024)");
   const fileSizeInKB = eval(fileSizeInB + "/ 1024");
-  if (fileSizeInGB > 1) {
+  if (fileSizeInTB > 1) {
+    return `${fileSizeInTB.toFixed(2)} TB`; // 保留两位小数
+  } else if (fileSizeInGB > 1) {
     return `${fileSizeInGB.toFixed(2)} GB`; // 保留两位小数
   } else if (fileSizeInMB > 1) {
     return `${fileSizeInMB.toFixed(2)} MB`; // 保留两位小数

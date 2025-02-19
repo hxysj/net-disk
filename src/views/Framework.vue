@@ -129,8 +129,8 @@
           <div class="tips" v-if="currentMenu.tips">{{ currentMenu.tips }}</div>
           <div class="space-info">
             <div class="space-title">空间使用</div>
-            <div class="percent row d-flex flex-nowrap">
-              <div class="col-10 m-0">
+            <div class="percent row m-0 d-flex flex-nowrap">
+              <div class="col-8 m-0 p-0">
                 <div
                   class="progress"
                   role="progressbar"
@@ -154,7 +154,7 @@
                   ></div>
                 </div>
               </div>
-              <div class="col p-0 m-0">
+              <div class="col p-1 m-0">
                 {{
                   Math.floor(
                     (useSpaceInfo.useSpace / useSpaceInfo.totalSpace) * 10000
@@ -647,10 +647,10 @@ getUseSpace();
       display: flex;
       flex-direction: column;
       .space-title {
-        padding-left: 4px;
+        padding-left: 2px;
       }
       .percent {
-        width: 100%;
+        /* width: 100%; */
         display: flex;
         align-items: center;
       }
@@ -658,7 +658,8 @@ getUseSpace();
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 3px;
+        padding: 0 2px;
+        font-size: 10px;
         .iconfont {
           font-size: 15px;
           color: #06a7ff;
