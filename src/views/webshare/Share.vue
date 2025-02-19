@@ -20,7 +20,7 @@
         </template>
         <template v-else>
           <div class="shareUser">
-            <div class="userinfo">
+            <div class="userInfo">
               <div class="info-img">
                 <img
                   :src="
@@ -66,7 +66,7 @@
                   --bs-btn-padding-x: 0.5rem;
                   --bs-btn-font-size: 0.75rem;
                 "
-                @click="saveAllFOlder"
+                @click="saveAllFolder"
               >
                 <span class="iconfont icon-import"></span>
                 保存到我的网盘
@@ -203,6 +203,8 @@ const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 // 分享的id
 const shareId = route.params.shareId;
+const shareInit = ref(false);
+
 // ------------------------------------------------------
 // 当前目录的位置
 interface currentFolder {
@@ -245,7 +247,7 @@ const getShareInfo = async () => {
     return;
   }
   shareInfo.value = result.data;
-  // console.log(result.data)
+  // console.log(result.data);
   currentFolder.value.fileId = result.data.filePid;
   filePid.value = result.data.filePid;
   if (localStorage.getItem("token")) {
@@ -260,6 +262,8 @@ const getShareInfo = async () => {
   } else {
     shareInfo.value.currentUser = false;
   }
+  loadDataList();
+  shareInit.value = true;
 };
 getShareInfo();
 
@@ -287,7 +291,7 @@ const tableData = ref<mainResponseData>({
   pageSize: 13,
   pageTotal: 1,
 });
-// 分享文件的根目录的pid - 从getshareInfo中获得
+// 分享文件的根目录的pid - 从getShareInfo中获得
 const filePid = ref("0");
 //----------------------------------------------------------------------------
 const loadding = ref();
@@ -362,10 +366,8 @@ interface navBackData {
 const navChange: (data: navBackData) => void = (data) => {
   const { curFolder } = data;
   currentFolder.value = curFolder;
-  // console.log(currentFolder.value)
-  // // 获取当前目录下的文件
-  // getAllFolder()
-  loadDataList();
+  //获取当前目录下的文件
+  shareInit.value && loadDataList();
 };
 // -----------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -448,7 +450,7 @@ const saveToMyPan: (data: dataListItem) => void = async (data) => {
   moveSelectModal.value.showSelectModal([data.fileId]);
 };
 // 移动多个文件
-const saveAllFOlder = async () => {
+const saveAllFolder = async () => {
   let result = await request({
     method: "GET",
     url: api.checkLogin,
@@ -572,7 +574,7 @@ const jump = () => {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        .userinfo {
+        .userInfo {
           display: flex;
           align-items: center;
           gap: 15px;
