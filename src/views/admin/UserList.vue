@@ -7,7 +7,7 @@
         placeholder="支持模糊搜索"
         v-model="searchForm.value"
         class="form-control"
-        @keyup.enter="loadDataList()"
+        @keyup.enter="search"
       />
     </div>
     <select
@@ -18,13 +18,8 @@
       <option :value="true" selected>启用</option>
       <option :value="false">禁用</option>
     </select>
-    <button class="btn btn-primary" type="button" @click="loadDataList(true)">
-      搜索
-    </button>
-    <div
-      class="iconfont icon-refresh refresh"
-      @click="loadDataList(false)"
-    ></div>
+    <button class="btn btn-primary" type="button" @click="search">搜索</button>
+    <div class="iconfont icon-refresh refresh" @click="loadDataList"></div>
   </div>
   <div class="user-list">
     <table class="table table-hover">
@@ -71,7 +66,7 @@
         </tr>
       </tbody>
     </table>
-    <div class="pagination">
+    <div class="pagination" v-if="tableData.pageTotal">
       <Pagination
         :pageTotal="tableData.pageTotal"
         :pageNo="tableData.pageNo"
@@ -207,8 +202,15 @@ const tableData = ref<userResponseData>({
   list: [],
 });
 // --------------------------------------------------------------------------
+
+// 点击进行搜索
+const search = () => {
+  tableData.value.pageNo = 1;
+  loadDataList();
+};
+
 // 加载数据
-const loadDataList = async (isSearch = false) => {
+const loadDataList = async () => {
   let params: {
     pageNo: number;
     pageSize: number;
@@ -218,10 +220,10 @@ const loadDataList = async (isSearch = false) => {
     pageNo: tableData.value.pageNo,
     pageSize: tableData.value.pageSize,
   };
-  if (isSearch) {
-    params.userNameFuzzy = searchForm.value.value;
-    params.status = searchForm.value.status;
-  }
+
+  params.userNameFuzzy = searchForm.value.value;
+  params.status = searchForm.value.status;
+
   let result;
   try {
     nextTick(() => {
@@ -266,7 +268,6 @@ const changeStatus = (data: userItem) => {
 };
 // 确定更改用户的状态
 const submitChangeStatus = async () => {
-  console.log(111);
   let result = await request({
     method: "POST",
     url: api.updateUserStatus,

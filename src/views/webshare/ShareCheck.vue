@@ -87,7 +87,6 @@ const getShareInfo = async () => {
       url: api.getShareInfo + "/" + shareId,
     });
   } catch (error) {
-    // console.log(error)
     messageToast.value.showToast({
       type: "error",
       message: "来晚啦，此分享失效了！",
@@ -99,7 +98,7 @@ const getShareInfo = async () => {
   if (!result) {
     return;
   }
-  // console.log(result.data)
+
   shareInfo.value = result.data;
 };
 getShareInfo();
@@ -128,9 +127,7 @@ const checkShare = async () => {
     errorMessage.value = "提取码错误！";
     return;
   }
-  // const { cookies } = useCookies()
-  // cookies.set('code_token',result.data.code_check,'10m')
-  // console.log(result)
+
   messageToast.value.showToast({
     type: "success",
     message: "提取成功！",
@@ -163,10 +160,11 @@ onMounted(() => {
       align-items: center;
       justify-content: center;
       gap: 5px;
-      color: rgba(64, 158, 254, 1);
+      color: white;
       font-size: 25px;
       margin-bottom: 10px;
       font-weight: bolder;
+      cursor: pointer;
       .iconfont {
         font-size: 32px;
       }
