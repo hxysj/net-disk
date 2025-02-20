@@ -386,7 +386,6 @@ const addNewFolder = () => {
   tableData.value.list.forEach((item) => (item.showEdit = false));
   newFolder.value.newEdit = true;
   nextTick(() => {
-    // console.log(editIpt.value)
     editIpt.value.focus();
   });
 };
@@ -417,7 +416,6 @@ const editName: (data: dataListItem) => void = (data) => {
   }
   data.showEdit = true;
   nextTick(() => {
-    // console.log(editIpt.value)
     editIpt.value[0].focus();
   });
 };
@@ -426,7 +424,6 @@ const submitEditName: (isNewDir: boolean, data?: dataListItem) => void = async (
   data
 ) => {
   let name = "";
-  // console.log(editIpt.value[0].value)
   // 判断是否为新建文件夹
   if (isNewDir) {
     // 新建目录的名称
@@ -664,7 +661,6 @@ const changeFolder: (e: Event, data: dataListItem) => void = (e, data) => {
   }
   // 文件未转码成功
   if (data.status != 2) {
-    // 文件正在转码中
     messageToast.value.showToast({
       type: "error",
       message: "预览失败，文件正在转码中！",
@@ -679,7 +675,6 @@ const changeFolder: (e: Event, data: dataListItem) => void = (e, data) => {
 const navigationRef = ref();
 
 const changeSelectFolder: (data: dataListItem) => void = (data) => {
-  // console.log('进入目录')
   filePid.value = data.fileId;
   navigationRef.value.openFolder(data);
 };
@@ -690,18 +685,17 @@ interface navBackData {
   curFolder: currentFolder;
 }
 const navChange: (data: navBackData) => void = (data) => {
-  // console.log(data)
   const { categoryId, curFolder } = data;
   currentFolder.value = curFolder;
+  // 只有分类变了才会重置页码
+  category.value != categoryId && (tableData.value.pageNo = 1);
   category.value = categoryId;
-  tableData.value.pageNo = 1;
   // 获取当前目录下的文件
   getAllFolder();
 };
 // ----------------------------------------------------------------------
 // 下载文件
 const download = async (file: dataListItem) => {
-  // console.log('点击下载文件',file.fileName)
   let result;
   try {
     result = await request({
@@ -731,7 +725,6 @@ const download = async (file: dataListItem) => {
 const fileNameFuzzy = ref();
 // 按文件名进行搜索
 const search = () => {
-  // console.log(fileNameFuzzy.value)
   getAllFolder();
 };
 

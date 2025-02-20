@@ -234,10 +234,24 @@ const shareInfo = ref<{
 });
 // 获取分享的文件信息
 const getShareInfo = async () => {
-  let result = await request({
-    method: "GET",
-    url: api.getShareInfo + "/" + shareId,
-  });
+  let result;
+  try {
+    result = await request({
+      method: "GET",
+      url: api.getShareInfo + "/" + shareId,
+    });
+  } catch (err: any) {
+    if (err.status === 404) {
+      messageToast.value.showToast({
+        type: "error",
+        message: "来晚啦，此分享失效了！",
+      });
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
+      return;
+    }
+  }
   if (!result) {
     return;
   }
