@@ -2,6 +2,7 @@
   <div class="chat-input">
     <div class="input-gj">
       <button @click="toggleEmojiPicker" class="emoji-button">😊</button>
+      <slot name="other-tool"></slot>
     </div>
     <div class="input-sr">
       <textarea
@@ -61,6 +62,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   .input-gj {
     display: flex;
     align-items: center;
+    gap: 5px;
     padding: 5px;
     .emoji-button {
       border: none;

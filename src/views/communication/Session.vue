@@ -70,7 +70,7 @@
           sessionType === 'ai'
         "
         :message-list="sessionMessage[currentSessionId]"
-        :currentUser="currentUser"
+        :current-user="currentUser"
         :friend="
           sessionType === 'ai'
             ? 'deepSeek'
@@ -87,6 +87,9 @@
             class="iconfont icon-del header-del"
             @click="clearMessage()"
           ></span>
+        </template>
+        <template v-if="sessionType === 'ai'" #tool>
+          <CustomSwitch v-model="isDeepThinking" />
         </template>
       </ChatBox>
       <div
@@ -189,6 +192,7 @@ import { emojify } from "node-emoji";
 import NotData from "@/components/NotData.vue";
 import OpenAI from "openai";
 import MessageModal from "@/components/message/MessageModal.vue";
+import CustomSwitch from "./cnp/CustomSwitch.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
@@ -223,6 +227,7 @@ const sessionList = ref<sessionType[]>([]);
 const currentSessionId = ref("");
 const sessionType = ref("session");
 const messageModal = ref();
+const isDeepThinking = ref(false);
 const changeCurrentSession = (id: string) => {
   currentSessionId.value = id;
   if (id === "-1") {
@@ -342,7 +347,7 @@ const sendMessageAi = async (message: string) => {
   let answerContent = ""; // 定义完整回复
   let isAnswering = false; // 判断是否结束思考过程并开始回复
   const completion = await openai.chat.completions.create({
-    model: "deepseek-r1",
+    model: isDeepThinking.value ? "deepseek-r1" : "deepseek-v3",
     messages: sessionMessage.value["-1"]?.map((item) => {
       return {
         role: item.user_id === currentUser.uid ? "user" : "assistant",
@@ -353,7 +358,7 @@ const sendMessageAi = async (message: string) => {
   });
   const ai_message_id = generateUniqueId();
   let messageObj = {
-    content: ">>正在思考问题: ",
+    content: "",
     create_time: new Date(),
     user_id: "deepSeek-ss-r1-0-openAPI-2-myTest-18",
     avatar: "deepSeek.png",
@@ -367,9 +372,9 @@ const sendMessageAi = async (message: string) => {
   );
 
   for await (const chunk of completion) {
-    const delta = chunk.choices[0].delta;
+    const delta: any = chunk.choices[0].delta;
     // 检查是否有reasoning_content属性
-    if (!("reasoning_content" in delta)) {
+    if (!("reasoning_content" in delta) && isDeepThinking.value) {
       continue;
     }
 
@@ -619,7 +624,14 @@ onMounted(async () => {
 watch(
   () => sessionMessage.value,
   async () => {
-    if (currentSessionId.value === "-1" || !currentSessionId.value) return;
+    if (
+      currentSessionId.value === "-1" ||
+      !currentSessionId.value ||
+      !sessionList.value.find(
+        (item) => item.conversation_id === currentSessionId.value
+      )?.new_message
+    )
+      return;
     clearMessageCount();
     await request({
       url: api.setMessageRead,
@@ -776,5 +788,20 @@ watch(
     height: 100%;
     z-index: 1;
   }
+}
+.form-switch {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.form-check-input {
+  margin-right: 10px;
+  position: relative;
+}
+
+.form-check-label {
+  margin-left: 5px;
+  display: inline-block;
 }
 </style>

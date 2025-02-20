@@ -5,9 +5,15 @@
       <slot name="headerOther"></slot>
     </div>
     <div class="content" ref="contentRef">
-      <Loadding ref="loadding"></Loadding>
       <div class="show-more" @click="loadingMore" v-if="isLoadMore">
-        点击加载更多
+        <div
+          class="spinner-border text-primary spinner-border-sm"
+          role="status"
+          v-if="isLoadingMore"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <div v-else>点击加载更多</div>
       </div>
       <div class="show-more" v-else>到底了</div>
       <ChatMessage
@@ -20,7 +26,11 @@
       />
     </div>
     <div class="box-input">
-      <ChatInput v-model:message="message" @submit="submitMessage" />
+      <ChatInput v-model:message="message" @submit="submitMessage">
+        <template #other-tool>
+          <slot name="tool"></slot>
+        </template>
+      </ChatInput>
     </div>
   </div>
 </template>
@@ -30,7 +40,6 @@ import ChatInput from "./ChatInput.vue";
 import { ref, nextTick, getCurrentInstance, PropType, watch } from "vue";
 import ChatMessage from "./ChatMessage.vue";
 import { unemojify } from "node-emoji";
-import Loadding from "@/components/Loadding.vue";
 
 const props = defineProps({
   friend: {
@@ -54,18 +63,27 @@ const props = defineProps({
     required: true,
   },
 });
-const loadding = ref();
 const emits = defineEmits(["submit", "showMore"]);
+
+// 消息展示的容器
 const contentRef = ref<HTMLElement | null>(null);
 const baseUrl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 
+// 是否能够继续获取更多消息
 const isLoadMore = defineModel("showMore");
+
+// 滚动回底部 - 首次进入的时候才会滚动回底部
 const scrollContent = () => {
   nextTick(() => {
     const element = contentRef.value as HTMLElement;
     element.scrollTop = element.scrollHeight;
   });
+};
+
+const scrollToOldContent = (oldHeight: number) => {
+  const element = contentRef.value as HTMLElement;
+  element.scrollTop = element.scrollHeight - oldHeight;
 };
 
 const message = ref("");
@@ -77,17 +95,20 @@ const submitMessage = () => {
 
 const isLoadingMore = ref(false);
 const loadingMore = () => {
-  emits("showMore");
   isLoadingMore.value = true;
-  loadding.value.showLoadding();
+  emits("showMore");
 };
 
 watch(
   () => props.messageList,
   () => {
+    // 获取之前消息的时候不重新滚动到末尾
     if (isLoadingMore.value) {
       isLoadingMore.value = false;
-      loadding.value.closeLoadding();
+      let oldHeight = contentRef.value?.scrollHeight as number;
+      nextTick(() => {
+        scrollToOldContent(oldHeight);
+      });
       return;
     }
     scrollContent();
