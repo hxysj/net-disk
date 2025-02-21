@@ -14,7 +14,7 @@
           class="value"
           v-else
           :style="{ 'align-self': isSelf ? 'flex-end' : 'flex-start' }"
-          v-html="wrappLinksWithATags(emojify(content as string))"
+          v-html="wrapLinksWithATags(emojify(content as string))"
         ></div>
       </div>
     </div>
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { emojify } from "node-emoji";
-import { isValidShareLink, wrappLinksWithATags } from "../../utils/utils";
+import { isValidShareLink, wrapLinksWithATags } from "../../utils/utils";
 import PreviewShare from "@/components/share-preview/PreviewShare.vue";
 
 defineProps({

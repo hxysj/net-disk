@@ -15,6 +15,7 @@
       aria-label=".form-select-lg example"
       v-model="searchForm.status"
     >
+      <option value="not_search">全部</option>
       <option :value="true" selected>启用</option>
       <option :value="false">禁用</option>
     </select>
@@ -153,9 +154,9 @@ const api = {
   updateUserSpace: "admin/updateUserSpace",
 };
 
-const searchForm = ref({
+const searchForm = ref<{ value: string; status: boolean | string }>({
   value: "",
-  status: true,
+  status: "not_search",
 });
 // --------------------------------------------------------------------------------
 
@@ -215,7 +216,7 @@ const loadDataList = async () => {
     pageNo: number;
     pageSize: number;
     userNameFuzzy?: string;
-    status?: boolean;
+    status?: boolean | string;
   } = {
     pageNo: tableData.value.pageNo,
     pageSize: tableData.value.pageSize,

@@ -5,17 +5,22 @@
         <img
           class="test"
           :src="getImage()"
-          :stlye="{ 'object-fit': fit }"
+          :style="{ 'object-fit': fit } as CSSProperties"
           alt=""
         />
       </template>
     </Viewer>
-    <img :src="getImage()" :stlye="{ 'object-fit': fit }" alt="" v-else />
+    <img
+      :src="getImage()"
+      :style="{ 'object-fit': fit } as CSSProperties"
+      alt=""
+      v-else
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, getCurrentInstance } from "vue";
+import { CSSProperties, defineProps, getCurrentInstance } from "vue";
 import { component as Viewer } from "v-viewer";
 import "viewerjs/dist/viewer.css";
 

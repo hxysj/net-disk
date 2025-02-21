@@ -252,7 +252,7 @@ export function isValidShareLink(content: string): {
 }
 
 // 解析字符串中的链接，用a标签包裹
-export function wrappLinksWithATags(text: string) {
+export function wrapLinksWithATags(text: string) {
   // 正则匹配 http:// 或 https:// 起始的链接，支持带端口、路径、参数等
   const urlRegex = /(https?:\/\/[^\s]+)/g; // 使用 <a> 标签绕过匹配到的链接
   return text.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');

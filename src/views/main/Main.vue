@@ -319,7 +319,7 @@ const tableData = ref<mainResponseData>({
 const filePid = ref("0");
 
 const loadding = ref();
-// 进入时，子组件路由监听，调用getAllfFolder 进行接口请求，获取展示的数据
+// 进入时，子组件路由监听，调用getAllFolder 进行接口请求，获取展示的数据
 const getAllFolder = async () => {
   // 请求时用的参数
   let params: {
@@ -482,11 +482,11 @@ const submitEditName: (isNewDir: boolean, data?: dataListItem) => void = async (
   getAllFolder();
 };
 // 取消修改
-const closeEditName: (isnewDir: boolean, data?: dataListItem) => void = (
-  isnewDir = false,
+const closeEditName: (isNewDir: boolean, data?: dataListItem) => void = (
+  isNewDir = false,
   data
 ) => {
-  if (isnewDir) {
+  if (isNewDir) {
     newFolder.value.newEdit = false;
     newFolder.value.fileName = "";
   } else {
