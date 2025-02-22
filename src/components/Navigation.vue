@@ -67,18 +67,14 @@ const currentFile = ref({
 
 // 当前的分类
 const category = ref();
-// 进入目录后要像进入的层数添加新的目录进去
+
+const api = {
+  getFolderInfo: "file/getFolderInfo",
+};
+// 进入目录后要向进入的层数添加新的目录进去
 const openFolder: (data: any) => void = (data) => {
-  // console.log(data)
-  const { fileId, fileName } = data;
-  const folder = {
-    fileName: fileName,
-    fileId: fileId,
-  };
-  folderList.value.push(folder);
-  // console.log(folderList.value)
-  currentFile.value = folder;
-  // console.log(currentFile.value)
+  folderList.value.push({ fileName: data.fileName, fileId: data.fileId });
+  currentFile.value = { fileId: data.fileId };
   setPath();
 };
 // 进入目录的时候需要更改位置
@@ -98,21 +94,10 @@ const setPath = () => {
     query: pathArray.length === 0 ? {} : { path: pathArray.join("/") },
   });
 };
-const api = {
-  getFolderInfo: "file/getFolderInfo",
-  getFolderInfoShare: "file/getFolderInfoShare",
-  getFolderInfoAdmin: "file/getFolderInfoAdmin",
-};
+
 // 获取当前路径的目录
 const getNavigationFolder: (path: string) => void = async (path) => {
   let url = api.getFolderInfo;
-  // if(props.shareId){
-  //     url=api.getFolderInfoShare
-  // }
-  // if(props.adminShow){
-  //     url=api.getFolderInfoAdmin
-  // }
-  // console.log(path)
   let result = await request({
     method: "POST",
     url: url,
