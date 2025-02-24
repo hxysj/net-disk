@@ -1,5 +1,4 @@
 <template>
-  <!-- 删除文件的Modal -->
   <div
     class="modal"
     id="exampleModal"

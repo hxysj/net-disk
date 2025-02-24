@@ -131,8 +131,8 @@
         </div>
       </div>
     </div>
-    <MessageToast ref="messageToast"></MessageToast>
-    <Loadding ref="loadding"></Loadding>
+    <MessageToast ref="messageToast" />
+    <Loadding ref="loadding" />
   </div>
 </template>
 

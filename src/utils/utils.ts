@@ -59,43 +59,6 @@ export function parseToken(token: string) {
   return payloadObj;
 }
 
-export async function fetchEncryptionKey() {
-  try {
-    // 使用 fetch 请求读取 .bin 文件
-    const response = await fetch("/encryption_key.bin"); // 访问 public/assets 目录中的文件
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch the encryption key file");
-    }
-
-    // 将文件内容转为 ArrayBuffer
-    const arrayBuffer = await response.arrayBuffer();
-
-    // 将 ArrayBuffer 转换为 Hex 字符串（假设用于加密密钥）
-    const encryptionKey = bufferToHex(arrayBuffer);
-
-    // 将读取的密钥保存到 encryption 变量
-    let encryption = encryptionKey;
-
-    console.log("Encryption Key:", encryption); // 打印输出密钥
-
-    // 你可以在这里使用 `encryption` 变量进行后续的加密/解密操作
-
-    return encryption;
-  } catch (error) {
-    console.error("Error fetching the encryption key:", error);
-  }
-}
-
-// Helper function: 将 ArrayBuffer 转换为 Hex 字符串
-function bufferToHex(buffer: any) {
-  return Array.prototype.map
-    .call(new Uint8Array(buffer), (byte) => {
-      return byte.toString(16).padStart(2, "0");
-    })
-    .join("");
-}
-
 export function formatTime(
   targetTime: string | Date,
   language: "zh" | "en" = "zh"
@@ -264,3 +227,20 @@ export function generateUniqueId(): string {
   const random = Math.random().toString(36).substring(2);
   return timestamp + random;
 }
+
+// 防抖
+export const debounce = <T extends (...args: any[]) => void>(
+  func: T,
+  delay: number = 400
+) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};

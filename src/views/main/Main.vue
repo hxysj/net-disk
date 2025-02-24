@@ -197,20 +197,20 @@
       </Table>
     </div>
     <!-- 确认框的Modal -->
-    <MessageModal ref="messageModal" @submit="delFolderFile"></MessageModal>
+    <MessageModal ref="messageModal" @submit="delFolderFile" />
     <!-- 文件移动 -->
     <FolderSelect ref="moveSelectModal" @selectFolder="moveFolderDone">
       <template #title> 移动到 </template>
       <template #saveBtnText> 移动到此 </template>
     </FolderSelect>
     <!-- 消息弹窗 -->
-    <MessageToast ref="messageToast"></MessageToast>
+    <MessageToast ref="messageToast" />
     <!-- 文件预览 -->
-    <Preview ref="previewRef"></Preview>
+    <Preview ref="previewRef" />
     <!-- 分享组件 -->
-    <ShareFile ref="shareFile"></ShareFile>
+    <ShareFile ref="shareFile" />
     <!-- 加载中 -->
-    <Loadding ref="loadding"></Loadding>
+    <Loadding ref="loadding" />
   </div>
 </template>
 

@@ -8,12 +8,12 @@
         </a>
         <div class="header-right">
           <div class="collapse-all">
-            <i class="iconfont icon-transfer" @click="showCollapseCilck"></i>
+            <i class="iconfont icon-transfer" @click="showCollapseClick"></i>
             <!-- 任务列表 -->
             <div class="collapse-body container">
               <div
                 class="collapse multi-collapse"
-                :class="[showCollpase ? 'showCollpase' : '']"
+                :class="[showCollapse ? 'showCollapse' : '']"
                 id="collapseWidthExample"
               >
                 <div class="card">
@@ -83,8 +83,13 @@
                 <a
                   class="dropdown-item"
                   href="#"
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
+                  @click.prevent="
+                    () =>
+                      modalRef.openMessage({
+                        message: '是否要退出登录？',
+                        title: '温馨提示',
+                      })
+                  "
                   >退出登陆</a
                 >
               </li>
@@ -94,7 +99,7 @@
       </div>
     </nav>
     <div class="body">
-      <div class="left-side" :class="[ishide ? 'showSide' : '']">
+      <div class="left-side" :class="[isHide ? 'showSide' : '']">
         <div class="menu-list">
           <template v-for="item in MENUS">
             <div
@@ -161,7 +166,7 @@
         </div>
         <div class="close-menu-list">
           <div>&lt</div>
-          <input type="checkbox" v-model="ishide" name="" id="" />
+          <input type="checkbox" v-model="isHide" name="" id="" />
         </div>
       </div>
       <div class="body-content">
@@ -173,56 +178,18 @@
           ></component>
         </router-view>
       </div>
-      <div class="open-menu" v-show="!ishide">
+      <div class="open-menu" v-show="!isHide">
         <div class="open-menu-item">
-          <input v-model="ishide" class="open-menu-input" type="checkbox" />
+          <input v-model="isHide" class="open-menu-input" type="checkbox" />
           <div class="iconfont icon-right"></div>
         </div>
       </div>
     </div>
     <!-- 模态框组件 -->
-    <UpdateAvatar
-      ref="updataAvatar"
-      @updateAvatar="refreshAvatar"
-    ></UpdateAvatar>
-    <UpdatePassword ref="updatePassword"></UpdatePassword>
-    <!-- 退出登录 -->
-    <div
-      class="modal fade"
-      id="exampleModal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">温馨提示</h1>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">是否要退出登录？</div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-              取消
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="outLogin"
-              data-bs-dismiss="modal"
-            >
-              确定
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <Loadding ref="loadding"></Loadding>
+    <UpdateAvatar ref="updataAvatar" @updateAvatar="refreshAvatar" />
+    <UpdatePassword ref="updatePassword" />
+    <MessageModal ref="modalRef" @submit="outLogin" />
+    <Loadding ref="loadding" />
   </div>
 </template>
 
@@ -237,6 +204,7 @@ import { MENUS } from "../utils/data";
 import { getCurrentInstance } from "vue";
 import request from "../utils/request";
 import Loadding from "@/components/Loadding.vue";
+import MessageModal from "@/components/message/MessageModal.vue";
 // 请求的基本连接
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
@@ -244,7 +212,7 @@ const router = useRouter();
 const route = useRoute();
 // 是否登录
 const isLogin = ref(false);
-
+const modalRef = ref();
 const api = {
   getUserSpace: "getUserSpace",
 };
@@ -373,15 +341,16 @@ const showPwd = () => {
 // -------------------------------------------------------
 // 退出登录
 const outLogin = () => {
-  // 删除localstorage中的token
   // 返回登录页面
   localStorage.removeItem("token");
-  router.push("/login");
+  setTimeout(() => {
+    router.push("/login");
+  }, 500);
 };
 
 // ---------------------------------------------------------
 // 用于控制小屏幕是left-side的显示隐藏
-const ishide = ref(false);
+const isHide = ref(false);
 
 interface fileData {
   file: File;
@@ -389,10 +358,10 @@ interface fileData {
 }
 // ---------------------------------------------------------
 // 任务列表的显示
-const showCollpase = ref(false);
+const showCollapse = ref(false);
 // 点击是否显示任务列表
-const showCollapseCilck = () => {
-  showCollpase.value = !showCollpase.value;
+const showCollapseClick = () => {
+  showCollapse.value = !showCollapse.value;
 };
 
 // 绑定任务列表的组件
@@ -401,7 +370,7 @@ const upLoaderRef = ref();
 // 添加文件时显示上传任务的列表,获取子组件传递过来的文件信息和fileData
 const addFile = (data: fileData) => {
   const { file, filePid } = data;
-  showCollpase.value = true;
+  showCollapse.value = true;
   // 将文件信息，目录id传递给任务
   upLoaderRef.value.addFile(file, filePid);
 };
@@ -518,7 +487,7 @@ const spaceUsagePercent = computed(() => {
         top: 40px;
         position: absolute;
         width: 570px;
-        .showCollpase {
+        .showCollapse {
           display: block !important;
         }
         .card-header {

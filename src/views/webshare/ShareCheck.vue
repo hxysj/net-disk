@@ -21,11 +21,11 @@
           <div class="header-right">
             <div class="right-item">
               <div class="nickName">{{ shareInfo.nickName }}</div>
-              <div class="sharetime">
+              <div class="share-time">
                 分享于 {{ shareInfo.shareTime.split(".")[0].replace("T", " ") }}
               </div>
             </div>
-            <div class="sharefile">分享文件：{{ shareInfo.fileName }}</div>
+            <div class="share-file">分享文件：{{ shareInfo.fileName }}</div>
           </div>
         </div>
         <div class="card-body">
@@ -192,8 +192,8 @@ onMounted(() => {
             gap: 20px;
             align-items: center;
           }
-          .sharetime,
-          .sharefile {
+          .share-time,
+          .share-file {
             font-size: 12px;
           }
         }

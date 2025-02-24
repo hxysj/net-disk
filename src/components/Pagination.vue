@@ -45,16 +45,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-interface Props {
-  pageTotal: number;
-  pageNo: number;
-  countShow: number;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  pageTotal: 1,
-  pageNo: 1,
-  countShow: 5,
+const props = defineProps({
+  pageTotal: {
+    type: Number,
+    default: 1,
+  },
+  pageNo: {
+    type: Number,
+    default: 1,
+  },
+  countShow: {
+    type: Number,
+    default: 5,
+  },
 });
 
 const emit = defineEmits<{

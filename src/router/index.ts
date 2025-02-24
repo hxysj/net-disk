@@ -131,12 +131,8 @@ router.beforeEach((to, _form, next) => {
   // console.log(to.path)
   // console.log(userInfo)
   // 如果不是管理则不让访问设置页面，跳转到404页面
-  if (to.path.includes("/settings/")) {
-    if (userInfo.identity) {
-      next();
-    } else {
-      next("/notFound");
-    }
+  if (to.path.includes("/settings/") && !userInfo.identity) {
+    next("/notFound");
   }
   next();
 });

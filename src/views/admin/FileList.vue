@@ -112,13 +112,13 @@
       </template>
     </Table>
     <!-- 确认框的Modal -->
-    <MessageModal ref="messageModal" @submit="delFolderFile"></MessageModal>
+    <MessageModal ref="messageModal" @submit="delFolderFile" />
     <!-- 消息弹窗 -->
-    <MessageToast ref="messageToast"></MessageToast>
+    <MessageToast ref="messageToast" />
     <!-- 文件预览 -->
-    <Preview ref="previewRef"></Preview>
+    <Preview ref="previewRef" />
     <!-- 分享组件 -->
-    <Loadding ref="loadding"></Loadding>
+    <Loadding ref="loadding" />
   </div>
 </template>
 
@@ -179,7 +179,6 @@ const search = () => {
 const loadding = ref();
 // 初始化数据
 const loadDataList = async () => {
-  // console.log(currentFolder.value)
   let result;
   let params = {
     pageNo: tableData.value.pageNo,
@@ -199,7 +198,6 @@ const loadDataList = async () => {
       method: "POST",
       data: params,
     });
-    // console.log(result.data)
   } finally {
     nextTick(() => {
       loadding.value.closeLoadding();
@@ -209,7 +207,6 @@ const loadDataList = async () => {
     return;
   }
   tableData.value = result.data;
-  // tableData.value.list = dataLists.filter(item=>item.filePid === currentFolder.value.fileId)
 };
 
 // 表格数据
@@ -244,7 +241,6 @@ const selectIdList = ref<del_obj[]>([]);
 
 // 设置选中的列表数据
 const setSelectList: (list: del_obj[]) => void = (list) => {
-  // console.log(list)
   selectIdList.value = list;
 };
 // ------------------------------------------------------------
@@ -283,7 +279,6 @@ const changeFolder: (e: Event, data: fileListItem) => void = (e, data) => {
 const navigationRef = ref();
 
 const changeSelectFolder: (data: fileListItem) => void = (data) => {
-  // console.log('进入目录')
   filePid.value = data.fileId;
   navigationRef.value.openFolder(data);
 };
@@ -295,8 +290,6 @@ interface navBackData {
 }
 const navChange: (data: navBackData) => void = (data) => {
   const { curFolder } = data;
-
-  // console.log(1111)
   currentFolder.value = curFolder;
   // 获取当前目录下的文件
   loadDataList();
@@ -312,7 +305,6 @@ let delList: del_obj[] = [];
 const messageModal = ref();
 // 删除单个文件
 const deleteFile: (data: fileListItem) => void = (data) => {
-  // selectIdList.value = [obj.id]
   delList = [
     {
       file_id: data.fileId,
@@ -327,9 +319,7 @@ const deleteFile: (data: fileListItem) => void = (data) => {
 };
 // 删除选中的所有文件
 const delAllCheck = () => {
-  // console.log(dataList.value)
   delList = selectIdList.value;
-  // console.log(delList)
   messageModal.value.openMessage({
     message: `你确定要删除选中的文件吗？`,
     title: "温馨提示！",
@@ -385,7 +375,6 @@ const noShowOp: (data: fileListItem) => void = (data) => {
 // ----------------------------------------------------------------------
 // 下载文件
 const download = async (file: fileListItem) => {
-  // console.log('点击下载文件',file.fileName)
   let result;
   try {
     result = await request({

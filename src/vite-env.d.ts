@@ -36,6 +36,10 @@ declare module "@/utils/utils" {
     language: "zh" | "en" = "zh"
   ): string;
   export function generateUniqueId(): string;
+  export function debounce<T extends (...args: any[]) => void>(
+    func: T,
+    delay?: number
+  ): (...args: Parameters<T>) => void;
 }
 
 declare module "@/utils/request" {

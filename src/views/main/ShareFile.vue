@@ -108,7 +108,7 @@
         </div>
       </div>
     </div>
-    <MessageToast ref="messageToast"></MessageToast>
+    <MessageToast ref="messageToast" />
   </div>
 </template>
 

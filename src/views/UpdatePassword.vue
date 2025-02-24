@@ -69,7 +69,7 @@
           </button>
         </div>
       </form>
-      <MessageToast ref="messageToast"></MessageToast>
+      <MessageToast ref="messageToast" />
     </div>
   </div>
 </template>
@@ -143,7 +143,7 @@ const submit = async () => {
       password: form.value.password,
     },
   });
-  // console.log(result.data)
+
   if (result.data.code == 200) {
     messageToast.value.showToast({
       type: "success",

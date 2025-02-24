@@ -70,6 +70,7 @@ import { useRouter } from "vue-router";
 import request from "@/utils/request";
 import LoginInput from "./LoginInput.vue";
 import { MyError, MyForm } from "./types";
+import { debounce } from "@/utils/utils";
 
 const emits = defineEmits(["message"]);
 const formColumn = [
@@ -158,7 +159,7 @@ const changeStatus: (type: number) => void = (type) => {
 };
 
 const errors = ref<MyError>({});
-const refresh_code = async () => {
+const refresh_code = debounce(async () => {
   let result;
   try {
     result = await request.get(api.getVerificationCode);
@@ -171,7 +172,7 @@ const refresh_code = async () => {
   }
   identifyId.value = result.data.captcha_id;
   identifyImage.value = result.data.captcha_image;
-};
+});
 
 const touchMessage = (obj: { type: string; message: string }) => {
   emits("message", obj);
@@ -248,7 +249,7 @@ const validateFrom: (type: string) => boolean = (type) => {
 };
 
 // 点击进行登陆 / 注册
-async function onSubmit() {
+const onSubmit = debounce(async () => {
   if (!validateFrom("all")) {
     return;
   }
@@ -342,7 +343,7 @@ async function onSubmit() {
     emits("message", { type: "success", message: "修改成功！" });
     changeStatus(0);
   }
-}
+});
 
 onMounted(() => {
   // 挂载完成后刷新验证码
