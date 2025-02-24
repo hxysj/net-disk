@@ -336,13 +336,17 @@ const setMenu: (menuCode: string, path: string) => void = (menuCode, path) => {
   currentPath.value = path;
 };
 watch(
-  () => route.meta.menuCode,
-  (menuCode) => {
-    if (menuCode) {
-      setMenu(menuCode as string, route.path);
+  () => route,
+  (newVal) => {
+    if (newVal.meta.menuCode) {
+      const menuCode = newVal.meta.menuCode as string;
+      setMenu(menuCode, newVal.path);
     }
   },
-  { immediate: true }
+  {
+    immediate: true,
+    deep: true,
+  }
 );
 // -----------------------------------------------------------
 // 绑定修改头像的模态框

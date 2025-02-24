@@ -1,65 +1,17 @@
 <template>
   <div class="">
-    <div class="top">
-      <div class="btn btn-primary" @click="clickAddFile">
-        <span class="iconfont icon-upload"></span>
-        上传
-        <input
-          type="file"
-          ref="fileInput"
-          :accept="fileAccept"
-          style="display: none"
-          @change="addFile"
-        />
-      </div>
-      <div
-        class="btn btn-success"
-        @click="addNewFolder"
-        v-if="category === 'all'"
-      >
-        <span class="iconfont icon-folder-add"></span>
-        新建文件夹
-      </div>
-      <div
-        class="btn btn-danger"
-        :class="[!haveSelect ? 'disabled' : '']"
-        @click="delAllCheck"
-      >
-        <span class="iconfont icon-del"></span>
-        批量删除
-      </div>
-      <div
-        class="btn btn-warning"
-        :class="[!haveSelect ? 'disabled' : '']"
-        @click="moveFolderPath"
-      >
-        <span class="iconfont icon-right"></span>
-        批量移动
-      </div>
-      <div class="input-group">
-        <span class="input-group-text iconfont icon-search" id="basic-addon1">
-        </span>
-        <input
-          type="text"
-          class="form-control"
-          aria-describedby="basic-addon1"
-          placeholder="请输入文件名搜索"
-          v-model="fileNameFuzzy"
-          @keyup.enter="search"
-        />
-        <button
-          class="btn btn-outline-secondary"
-          :class="[fileNameFuzzy ? '' : 'disabled']"
-          type="button"
-          id="button-addon2"
-          @click="search"
-        >
-          搜索
-        </button>
-      </div>
-      <div class="iconfont icon-refresh refresh" @click="getAllFolder"></div>
-    </div>
-    <!-- 位置导航 -->
+    <MainTools
+      v-model:fuzzy="fileNameFuzzy"
+      ref="toolsRef"
+      :haveSelect="haveSelect"
+      :category="category"
+      :get-all-folder="getAllFolder"
+      :current-folder="currentFolder"
+      @addNewFolder="addNewFolder"
+      @delAllCheck="delAllCheck"
+      @moveFolderPath="moveFolderPath"
+      @add-file="(obj) => emit('addFile', obj)"
+    />
     <Navigation ref="navigationRef" @navChange="navChange"> </Navigation>
     <!-- 文件列表 -->
     <div class="file-list">
@@ -229,7 +181,7 @@
               <div class="tips">当前目录为空，上传你的第一个文件吧</div>
             </div>
             <div class="op-tip">
-              <div class="op-tip-item" @click="clickAddFile">
+              <div class="op-tip-item" @click="() => toolsRef.clickAddFile">
                 <div><img src="/src/assets/icon-image/file.png" alt="" /></div>
                 <div>上传文件</div>
               </div>
@@ -265,11 +217,11 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, getCurrentInstance } from "vue";
 import Table from "@/components/Table.vue";
+import MainTools from "./cnp/MainTools.vue";
 import { formatFileSize } from "@/utils/utils";
 import FolderSelect from "@/components/FolderSelect.vue";
 import Navigation from "@/components/Navigation.vue";
 import { dataListItem, mainResponseData } from "../../common/common";
-import cateGoryInfo from "@/ts/cateGoryInfo";
 import Preview from "@/components/preview/Preview.vue";
 import ShareFile from "@/views/main/ShareFile.vue";
 import FileIcon from "@/components/FileIcon.vue";
@@ -317,7 +269,7 @@ const tableData = ref<mainResponseData>({
   list: [],
 });
 const filePid = ref("0");
-
+const toolsRef = ref();
 const loadding = ref();
 // 进入时，子组件路由监听，调用getAllFolder 进行接口请求，获取展示的数据
 const getAllFolder = async () => {
@@ -464,7 +416,6 @@ const submitEditName: (isNewDir: boolean, data?: dataListItem) => void = async (
         fileId: data?.fileId,
       },
     });
-    // console.log(result)
     if (result.data.code === 4000) {
       messageToast.value.showToast({
         type: "error",
@@ -494,31 +445,10 @@ const closeEditName: (isNewDir: boolean, data?: dataListItem) => void = (
   }
   editIpt.value.value = "";
 };
-// ----------------------------------------------------------
 // 是否为全部不是分类
 const category = ref("all");
 
-// 绑定文件选择的input
-const fileInput = ref();
-const clickAddFile = () => {
-  fileInput.value.click();
-};
-// -------------------------------------------------------
-// 上传文件的限制,如到视频分类时，点击上传文件，则选中视频类
-type categoryType = "all" | "video" | "music" | "image" | "doc" | "others";
-const fileAccept = computed(() => {
-  const categoryItem = cateGoryInfo[category.value as categoryType];
-  return categoryItem ? categoryItem.accept : "*";
-});
-// -------------------------------------------------------
-// 上传文件，调用父组件的方法来上传文件
 const emit = defineEmits(["addFile"]);
-const addFile = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const fileData = target.files && target.files[0];
-  emit("addFile", { file: fileData, filePid: currentFolder.value.fileId });
-  target.value = "";
-};
 
 // --------------------------------------------------------
 // 上传完文件后进行回调，刷新页面
@@ -711,7 +641,6 @@ const download = async (file: dataListItem) => {
   if (!result) {
     return;
   }
-  // console.log(result.data)
   window.location.href =
     baseurl +
     api.download +
@@ -723,10 +652,6 @@ const download = async (file: dataListItem) => {
 // ----------------------------------------------------------------------
 // 搜索绑定的值
 const fileNameFuzzy = ref();
-// 按文件名进行搜索
-const search = () => {
-  getAllFolder();
-};
 
 // -------------------------------------------------------------------
 // 预览的组件

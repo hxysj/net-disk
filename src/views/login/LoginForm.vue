@@ -69,12 +69,10 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import request from "@/utils/request";
 import LoginInput from "./LoginInput.vue";
+import { MyError, MyForm } from "./types";
 
-// 绑定表单
-// const submitForm = ref();
 const emits = defineEmits(["message"]);
-// const formRef = ref();
-const formColumn = ref([
+const formColumn = [
   {
     label: "账号",
     key: "userName",
@@ -121,7 +119,7 @@ const formColumn = ref([
     placeholder: "请输入验证码",
     errorKey: "code",
   },
-]);
+];
 
 // 请求需要的api接口
 const api = {
@@ -133,16 +131,8 @@ const api = {
 };
 
 const router = useRouter();
-// 保存用户输入的信息
-interface myForm {
-  userName?: string;
-  password?: string;
-  password2?: string;
-  email?: string;
-  code?: string;
-  emailCode?: string;
-}
-const userForm = ref<myForm>({});
+
+const userForm = ref<MyForm>({});
 
 // 账号规则  密码规则
 let regName = /^[a-zA-Z0-9]{3,9}$/;
@@ -166,15 +156,7 @@ const changeStatus: (type: number) => void = (type) => {
   userForm.value = {};
   refresh_code();
 };
-// ---------------------------------------------------
-interface MyError {
-  name?: string;
-  pwd?: string;
-  pwd2?: string;
-  code?: string;
-  email?: string;
-  emailCode?: string;
-}
+
 const errors = ref<MyError>({});
 const refresh_code = async () => {
   let result;
