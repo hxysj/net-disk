@@ -79,6 +79,7 @@
   </div>
   <MessageModal ref="messageModalRef" @submit="deleteFriend(true, '')" />
   <MessageToast ref="messageToastRef" />
+  <Loadding ref="loaddingRef" />
 </template>
 
 <script setup lang="ts">
@@ -89,14 +90,14 @@ import { useRouter } from "vue-router";
 import MessageModal from "@/components/message/MessageModal.vue";
 import MessageToast from "@/components/message/MessageToast.vue";
 import NotData from "@/components/NotData.vue";
-
+import Loadding from "../../components/Loadding.vue";
 // 添加 emits 声明
 defineEmits(["addFile"]);
 
 const router = useRouter();
 const messageModalRef = ref<any>(null);
 const messageToastRef = ref<any>(null);
-
+const loaddingRef = ref();
 const api = {
   getFriendList: "getFriendList",
   createSession: "chat/addNewSession",
@@ -132,6 +133,7 @@ const createSession = async () => {
 };
 
 const getFriendList = async () => {
+  loaddingRef.value.showLoadding();
   let result = await request({
     url: api.getFriendList,
     method: "GET",
@@ -139,6 +141,7 @@ const getFriendList = async () => {
   if (result.data.code === 10000) {
     friendList.value = result.data.list;
   }
+  loaddingRef.value.closeLoadding();
 };
 
 const deleteFriend = async (isDelete: boolean, type: string) => {

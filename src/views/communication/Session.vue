@@ -177,6 +177,7 @@
   </div>
   <MessageToast ref="messageToast" />
   <MessageModal ref="messageModal" @submit="clearMessage(true)"></MessageModal>
+  <Loadding ref="loaddingRef" />
 </template>
 
 <script setup lang="ts">
@@ -193,6 +194,7 @@ import NotData from "@/components/NotData.vue";
 import OpenAI from "openai";
 import MessageModal from "@/components/message/MessageModal.vue";
 import CustomSwitch from "./cnp/CustomSwitch.vue";
+import Loadding from "@/components/Loadding.vue";
 
 // 添加 emits 声明
 defineEmits(["addFile"]);
@@ -228,6 +230,7 @@ const currentSessionId = ref("");
 const sessionType = ref("session");
 const messageModal = ref();
 const isDeepThinking = ref(false);
+const loaddingRef = ref();
 const changeCurrentSession = (id: string) => {
   currentSessionId.value = id;
   if (id === "-1") {
@@ -492,6 +495,7 @@ const clearMessageCount = () => {
 
 // 获取用户的好友申请信息
 const getFriendApplyList = async () => {
+  loaddingRef.value.showLoadding();
   // 获取用户的好友申请信息
   let result = await request({
     url: api.getFriendApply,
@@ -505,6 +509,7 @@ const getFriendApplyList = async () => {
   } else {
     friendApplyList.value = result.data.list;
   }
+  loaddingRef.value.closeLoadding();
 };
 
 // 对已经添加的好友发送消息

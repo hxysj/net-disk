@@ -18,6 +18,8 @@ declare module "bootstrap";
 
 declare module "aplayer";
 
+declare module "echarts";
+
 declare class Hls {
   constructor(config?: HlsConfig);
   loadSource(src: string): void;
