@@ -143,24 +143,12 @@
                   <div
                     class="progress-bar"
                     :style="{
-                      width:
-                        Math.floor(
-                          (useSpaceInfo.useSpace / useSpaceInfo.totalSpace) *
-                            10000
-                        ) /
-                          100 +
-                        'px',
+                      width: spaceUsagePercent + '%',
                     }"
                   ></div>
                 </div>
               </div>
-              <div class="col p-1 m-0">
-                {{
-                  Math.floor(
-                    (useSpaceInfo.useSpace / useSpaceInfo.totalSpace) * 10000
-                  ) / 100
-                }}%
-              </div>
+              <div class="col p-1 m-0">{{ spaceUsagePercent }}%</div>
             </div>
             <div class="space-refresh">
               <div>
@@ -239,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue";
+import { ref, watch, nextTick, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import UpdateAvatar from "@/views/UpdateAvatar.vue";
 import UpdatePassword from "@/views/UpdatePassword.vue";
@@ -348,18 +336,13 @@ const setMenu: (menuCode: string, path: string) => void = (menuCode, path) => {
   currentPath.value = path;
 };
 watch(
-  () => route,
-  (newVal) => {
-    if (newVal.meta.menuCode) {
-      // 告诉TypeScript此处的menuCode是string类型
-      const menuCode = newVal.meta.menuCode as string;
-      setMenu(menuCode, newVal.path);
+  () => route.meta.menuCode,
+  (menuCode) => {
+    if (menuCode) {
+      setMenu(menuCode as string, route.path);
     }
   },
-  {
-    immediate: true,
-    deep: true,
-  }
+  { immediate: true }
 );
 // -----------------------------------------------------------
 // 绑定修改头像的模态框
@@ -469,9 +452,23 @@ const getUseSpace = async () => {
 };
 // 页面初始化的时候
 getUseSpace();
+
+const spaceUsagePercent = computed(() => {
+  return (
+    Math.floor(
+      (useSpaceInfo.value.useSpace / useSpaceInfo.value.totalSpace) * 10000
+    ) / 100
+  );
+});
 </script>
 
 <style scoped lang="scss">
+:root {
+  --primary-color: #06a7ff;
+  --text-gray: #969696;
+  --shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.06);
+}
+
 .framework {
   width: 100%;
 }
@@ -760,6 +757,19 @@ getUseSpace();
     .showSide {
       display: flex !important;
     }
+  }
+}
+
+.header-right {
+  .right-name {
+    color: var(--primary-color);
+  }
+}
+
+.active {
+  .iconfont,
+  .text {
+    color: var(--primary-color);
   }
 }
 </style>
