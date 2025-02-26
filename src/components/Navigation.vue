@@ -56,13 +56,14 @@ const props = defineProps({
 
 // 目录集合，进入了多少层
 interface folderNameID {
-  fileName: string;
+  fileName?: string;
   fileId: string;
 }
 const folderList = ref<folderNameID[]>([]);
 // 当前目录
-const currentFile = ref({
+const currentFile = ref<folderNameID>({
   fileId: "0",
+  fileName: "全部文件",
 });
 
 // 当前的分类
@@ -74,7 +75,7 @@ const api = {
 // 进入目录后要向进入的层数添加新的目录进去
 const openFolder: (data: any) => void = (data) => {
   folderList.value.push({ fileName: data.fileName, fileId: data.fileId });
-  currentFile.value = { fileId: data.fileId };
+  currentFile.value = { fileId: data.fileId, fileName: data.fileName };
   setPath();
 };
 // 进入目录的时候需要更改位置
@@ -88,7 +89,6 @@ const setPath = () => {
   folderList.value.forEach((item) => {
     pathArray.push(item.fileId);
   });
-  // console.log(pathArray)
   router.push({
     path: route.path,
     query: pathArray.length === 0 ? {} : { path: pathArray.join("/") },
@@ -109,7 +109,6 @@ const getNavigationFolder: (path: string) => void = async (path) => {
   if (result.data.code === 404) {
     return;
   }
-  // console.log(result.data)
   folderList.value = result.data.data;
 };
 
