@@ -98,7 +98,7 @@ import MessageToast from "@/components/message/MessageToast.vue";
 import Loadding from "@/components/Loadding.vue";
 import { shareListItem, shareResponseData } from "../../common/common.ts";
 import request from "../../utils/request.ts";
-import { ref, nextTick } from "vue";
+import { ref, nextTick, inject, watch } from "vue";
 import useClipboard from "vue-clipboard3";
 import NotData from "@/components/NotData.vue";
 const { toClipboard } = useClipboard();
@@ -132,9 +132,11 @@ const columns = [
     width: 100,
   },
 ];
-
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 const tableData = ref<shareResponseData>({
-  pageSize: 13,
+  pageSize: page_show_count_obj!.file,
   pageNo: 1,
   pageTotal: 1,
   list: [],
@@ -254,6 +256,17 @@ const changeSize = (num: number) => {
   tableData.value.pageNo = num;
   loadDataList();
 };
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.file;
+    loadDataList();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style scoped>

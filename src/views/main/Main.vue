@@ -215,7 +215,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, getCurrentInstance } from "vue";
+import {
+  ref,
+  computed,
+  nextTick,
+  getCurrentInstance,
+  watch,
+  inject,
+} from "vue";
 import Table from "@/components/Table.vue";
 import MainTools from "./cnp/MainTools.vue";
 import { formatFileSize } from "@/utils/utils";
@@ -261,9 +268,13 @@ const api = {
 // 请求的基本连接
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
+
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 // 页面展示的数据
 const tableData = ref<mainResponseData>({
-  pageSize: 13,
+  pageSize: page_show_count_obj!.file,
   pageNo: 1,
   pageTotal: 10,
   list: [],
@@ -677,7 +688,17 @@ const showOp: (data: dataListItem) => void = (data) => {
 const noShowOp: (data: dataListItem) => void = (data) => {
   data.showOp = false;
 };
-// ---------------------------------------------------------------------------
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.file;
+    getAllFolder();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style lang="scss" scoped>

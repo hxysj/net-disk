@@ -166,3 +166,14 @@ export const APPLY_STATUS_COLOR = {
   2: "#67c23a",
   3: "#909399",
 };
+
+export const BREAK_POINTS = [
+  { max: 697, file: 8, user: 6 },
+  { max: 743, file: 9, user: 6 },
+  { max: 745, file: 10, user: 6 },
+  { max: 798, file: 10, user: 7 },
+  { max: 817, file: 11, user: 7 },
+  { max: 849, file: 11, user: 8 },
+  { max: 910, file: 12, user: 8 },
+  { max: Infinity, file: 13, user: 9 },
+];

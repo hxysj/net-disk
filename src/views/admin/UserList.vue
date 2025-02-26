@@ -67,7 +67,7 @@
         </tr>
       </tbody>
     </table>
-    <div class="pagination" v-if="tableData.pageTotal">
+    <div class="pagination" v-if="tableData.pageTotal > 1">
       <Pagination
         :pageTotal="tableData.pageTotal"
         :pageNo="tableData.pageNo"
@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, getCurrentInstance } from "vue";
+import { ref, nextTick, getCurrentInstance, inject, watch } from "vue";
 import { formatFileSize } from "@/utils/utils";
 import { userItem, userResponseData } from "../../common/common";
 import MessageModal from "@/components/message/MessageModal.vue";
@@ -153,7 +153,9 @@ const api = {
   updateUserStatus: "admin/updateUserStatus",
   updateUserSpace: "admin/updateUserSpace",
 };
-
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 const searchForm = ref<{ value: string; status: boolean | string }>({
   value: "",
   status: "not_search",
@@ -198,7 +200,7 @@ const messageToast = ref();
 const loadding = ref();
 const tableData = ref<userResponseData>({
   pageNo: 1,
-  pageSize: 9,
+  pageSize: page_show_count_obj!.user,
   pageTotal: 1,
   list: [],
 });
@@ -337,6 +339,17 @@ const paginationChange = (num: number) => {
   tableData.value.pageNo = num;
   loadDataList();
 };
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.user;
+    loadDataList();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style scoped lang="scss">

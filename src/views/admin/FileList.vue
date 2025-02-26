@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, getCurrentInstance } from "vue";
+import { ref, nextTick, getCurrentInstance, watch, inject } from "vue";
 import Navigation from "@/components/Navigation.vue";
 import Table from "@/components/Table.vue";
 import { fileListResponseData, fileListItem } from "../../common/common";
@@ -139,7 +139,9 @@ const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
 // 为了不让浏览器报错
 const emit = defineEmits(["addFile"]);
-
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 // 请求所有的api
 const api = {
   loadDataList: "admin/loadFileList",
@@ -212,7 +214,7 @@ const loadDataList = async () => {
 // 表格数据
 const tableData = ref<fileListResponseData>({
   pageNo: 1,
-  pageSize: 13,
+  pageSize: page_show_count_obj?.file as number,
   list: [],
   pageTotal: 1,
 });
@@ -405,6 +407,17 @@ const changeSize = (num: number) => {
   tableData.value.pageNo = num;
   loadDataList();
 };
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.file;
+    loadDataList();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style scoped>

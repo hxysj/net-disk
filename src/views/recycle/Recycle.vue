@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { ref, nextTick, inject, watch } from "vue";
 import { recycleItem, recycleResponseData } from "../../common/common";
 import FileIcon from "@/components/FileIcon.vue";
 import Table from "@/components/Table.vue";
@@ -120,10 +120,14 @@ const setSelectList = (rows: string[]) => {
     selectIdList.value.push(item);
   });
 };
+
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 // ------------------------------------------------------------
 const tableData = ref<recycleResponseData>({
   list: [],
-  pageSize: 13,
+  pageSize: page_show_count_obj!.file,
   pageNo: 1,
   pageTotal: 1,
 });
@@ -286,6 +290,17 @@ const changeSize = (num: number) => {
   tableData.value.pageNo = num;
   loadDataList();
 };
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.file;
+    loadDataList();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style scoped>

@@ -171,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, getCurrentInstance, nextTick } from "vue";
+import { ref, getCurrentInstance, nextTick, inject, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Navigation from "@/components/Navigation.vue";
 import Table from "@/components/Table.vue";
@@ -204,6 +204,10 @@ const baseurl =
 // 分享的id
 const shareId = route.params.shareId;
 const shareInit = ref(false);
+
+const page_show_count_obj = inject<{ file: number; user: number }>(
+  "page_show_count_obj"
+);
 
 // ------------------------------------------------------
 // 当前目录的位置
@@ -302,7 +306,7 @@ const columns = [
 const tableData = ref<mainResponseData>({
   pageNo: 1,
   list: [],
-  pageSize: 13,
+  pageSize: page_show_count_obj!.file,
   pageTotal: 1,
 });
 // 分享文件的根目录的pid - 从getShareInfo中获得
@@ -522,6 +526,7 @@ const changeSize = (num: number) => {
   tableData.value.pageNo = num;
   loadDataList();
 };
+
 // ------------------------------------------------------------------------------------
 // 取消分享
 const cancelShare = async () => {
@@ -547,6 +552,17 @@ const cancelShare = async () => {
 const jump = () => {
   router.push("/");
 };
+
+watch(
+  () => page_show_count_obj,
+  (val) => {
+    tableData.value.pageSize = val!.file;
+    loadDataList();
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <style scoped lang="scss">
