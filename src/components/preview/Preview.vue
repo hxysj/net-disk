@@ -1,7 +1,7 @@
 <template>
   <div>
     <Window
-      :show="windowShow"
+      v-if="windowShow"
       @close="closeWindow"
       :width="fileInfo?.fileType == 1 ? 1500 : 900"
       :title="fileInfo?.fileName"
