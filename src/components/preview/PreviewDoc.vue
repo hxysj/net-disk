@@ -27,6 +27,7 @@ const initDoc = async () => {
   if (!result.data) {
     return;
   }
+  console.log(result.data);
   // result 是一个文件流数据
   await renderAsync(result.data, docRef.value);
   preloadingRef.value.changeLoading(false);
@@ -39,7 +40,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .doc-content {
-  margin: 0 auot;
+  margin: 0 auto;
   :deep .docx-wrapper {
     background-color: #fff;
     padding: 10px 0;
