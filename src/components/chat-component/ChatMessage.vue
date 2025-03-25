@@ -2,7 +2,10 @@
   <div class="message" :class="isSelf ? 'flex-end' : 'flex-start'">
     <div class="info">
       <img :src="avatar" alt="" class="avatar" />
-      <div class="content">
+      <div
+        class="content"
+        :class="isSelf ? 'align-items-end' : 'align-items-start'"
+      >
         <div class="name">{{ userName }}</div>
         <template v-if="isValidShareLink(content as string).isShareLink">
           <PreviewShare

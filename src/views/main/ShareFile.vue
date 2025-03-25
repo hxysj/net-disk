@@ -160,10 +160,8 @@ const codeMethod = ref([
 // 打开弹窗
 const openShareFile = (file: dataListItem) => {
   isShow.value = true;
-  // resultInfo.value = {}
   fileInfo.value = file;
   isShareSuccess.value = false;
-  // console.log(fileInfo.value)
 };
 const errorMessage = ref();
 // 分享的数据

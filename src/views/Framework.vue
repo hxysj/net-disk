@@ -8,8 +8,11 @@
         </a>
         <div class="header-right">
           <div class="collapse-all">
-            <i class="iconfont icon-transfer" @click="showCollapseClick"></i>
-            <!-- 任务列表 -->
+            <i
+              class="iconfont icon-transfer"
+              @click="showCollapseClick"
+              style="cursor: pointer"
+            ></i>
             <div class="collapse-body container">
               <div
                 class="collapse multi-collapse"

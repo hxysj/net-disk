@@ -10,7 +10,6 @@
         <div class="filename">
           {{ item.fileName }}
         </div>
-        <!-- 进度条 -->
         <div
           class="item-progress"
           v-if="
@@ -37,18 +36,15 @@
           <div>{{ Math.floor(item.uploadProgress * 100) }}%</div>
         </div>
         <div class="upload-status">
-          <!-- 图标 -->
           <span
             :class="['iconfont', 'icon-' + STATUS[item.status].icon]"
             :style="{ color: STATUS[item.status].color }"
           ></span>
-          <!-- 状态描述 -->
           <span class="status" :style="{ color: STATUS[item.status].color }">
             {{
               item.status == "fail" ? item.errorMsg : STATUS[item.status].desc
             }}
           </span>
-          <!-- 上传中时显示大小进度 -->
           <span
             class="upload-info"
             v-if="item.status === STATUS.uploading.value"
@@ -69,19 +65,16 @@
         </div>
         <div class="op-btn">
           <template v-if="item.status === STATUS.uploading.value">
-            <!-- 上传按钮 -->
             <span
               class="iconfont icon-jixuxiazai"
               v-if="item.pause"
               @click="continue_uploader(item.uid, item.chunkIndex)"
             ></span>
-            <!-- 暂停按钮 -->
             <span
               class="iconfont icon-pause"
               v-else
               @click="pause_uploader(item.fileId)"
             ></span>
-            <!-- 取消按钮 -->
             <span
               class="iconfont icon-close"
               v-if="
@@ -93,7 +86,6 @@
             ></span>
           </template>
           <template v-else>
-            <!-- 删除按钮,已经上传完成了 -->
             <span
               class="iconfont icon-del"
               v-if="
@@ -115,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, getCurrentInstance } from "vue";
 import { formatFileSize } from "@/utils/utils";
 import { STATUS } from "@/utils/data";
 import NotData from "@/components/NotData.vue";
@@ -124,12 +116,18 @@ import request from "@/utils/request";
 import { nanoid } from "nanoid";
 import { addDataToIDB, getDataFromIDB, deleteDataFromIDB } from "@/utils/db";
 import { FileItemType } from "./types";
+import pako from "pako";
+import CryptoJS from "crypto-js";
 
 const api = {
   uploadFile: "file/uploadFile",
   cancelUpload: "file/cancelUpload",
   pauseUploader: "file/pauseUploader",
 };
+
+const encryptionKey =
+  getCurrentInstance()?.appContext.config.globalProperties.$encryptionKey;
+const ivKey = getCurrentInstance()?.appContext.config.globalProperties.$iv;
 
 //文件列表
 const fileList = ref<FileItemType[]>([]);
@@ -375,8 +373,34 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
       file = file_data;
       chunkFile = file_data.slice(start, end);
     }
+    const compressedData = pako.gzip(
+      new Uint8Array(await chunkFile.arrayBuffer())
+    );
+    // 将压缩后的文件转换为Blob
+    const compressedBlob = new Blob([compressedData], {
+      type: "application/octet-stream",
+    });
+
+    // 将 文件块Blob 转换为 ArrayBuffer
+    const chunkFileArrayBuffer = await compressedBlob.arrayBuffer();
+    // 将 ArrayBuffer 转换为 WordArray
+    const wordArray = CryptoJS.lib.WordArray.create(chunkFileArrayBuffer);
+
+    // 使用 AES 加密
+    const encrypted = CryptoJS.AES.encrypt(
+      wordArray,
+      CryptoJS.enc.Utf8.parse(encryptionKey),
+      {
+        iv: CryptoJS.enc.Utf8.parse(ivKey),
+        padding: CryptoJS.pad.Pkcs7,
+        mode: CryptoJS.mode.CBC,
+      }
+    );
+    // 将加密数据转成 Base64 字符串
+    const encryptedBase64 = CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
+
     const formData = new FormData();
-    formData.append("file", chunkFile);
+    formData.append("fileBase64", encryptedBase64);
     formData.append("fileName", file.name);
     formData.append("fileMd5", currentFile.md5 as string);
     formData.append("chunkIndex", i + "");

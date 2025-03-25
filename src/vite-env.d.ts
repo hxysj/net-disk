@@ -20,6 +20,8 @@ declare module "aplayer";
 
 declare module "echarts";
 
+declare module "pako";
+
 declare class Hls {
   constructor(config?: HlsConfig);
   loadSource(src: string): void;
