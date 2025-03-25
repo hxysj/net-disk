@@ -152,19 +152,26 @@ export const MENUS = [
   },
 ];
 
+export enum ApplyStatus {
+  PENDING = 0,
+  REJECTED = 1,
+  APPROVED = 2,
+  EXPIRED = 3,
+}
+
 // status 状态： 0待通过 1拒接 2通过
 export const APPLY_STATUS = {
-  0: "待通过",
-  1: "已拒绝",
-  2: "已通过",
-  3: "已失效",
+  [ApplyStatus.PENDING]: "待通过",
+  [ApplyStatus.REJECTED]: "已拒绝",
+  [ApplyStatus.APPROVED]: "已通过",
+  [ApplyStatus.EXPIRED]: "已失效",
 };
 
 export const APPLY_STATUS_COLOR = {
-  0: "#409eff",
-  1: "#F75000",
-  2: "#67c23a",
-  3: "#909399",
+  [ApplyStatus.PENDING]: "#409eff",
+  [ApplyStatus.REJECTED]: "#F75000",
+  [ApplyStatus.APPROVED]: "#67c23a",
+  [ApplyStatus.EXPIRED]: "#909399",
 };
 
 export const BREAK_POINTS = [
@@ -177,3 +184,19 @@ export const BREAK_POINTS = [
   { max: 910, file: 12, user: 8 },
   { max: Infinity, file: 13, user: 9 },
 ];
+
+// 文件分片配置
+export const CHUNK_CONFIG = {
+  // 基础分片大小 1MB
+  BASE_SIZE: 1024 * 1024,
+
+  // 分片大小配置 [文件大小上限(MB), 分片大小(MB), 期望分片数]
+  SLICE_CONFIG: [
+    { maxSize: 10, chunkSize: 1, expectedChunks: 10 }, // 10MB以下
+    { maxSize: 100, chunkSize: 4, expectedChunks: 25 }, // 10-100MB
+    { maxSize: 500, chunkSize: 8, expectedChunks: 63 }, // 100-500MB
+    { maxSize: 2048, chunkSize: 16, expectedChunks: 128 }, // 500MB-2GB
+    { maxSize: 10240, chunkSize: 32, expectedChunks: 320 }, // 2GB-10GB
+    { maxSize: null, chunkSize: 64, expectedChunks: 640 }, // 10GB以上
+  ],
+} as const;

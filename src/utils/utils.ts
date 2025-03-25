@@ -1,3 +1,5 @@
+import { CHUNK_CONFIG } from "./data";
+
 // 计算文件大小
 export const formatFileSize: (fileSizeInB: number) => string = (
   fileSizeInB
@@ -243,4 +245,20 @@ export const debounce = <T extends (...args: any[]) => void>(
       func(...args);
     }, delay);
   };
+};
+
+/**
+ * 获取文件分片大小
+ * @param fileSize 文件大小(字节)
+ * @returns 分片大小(字节)
+ */
+export const getChunkSize = (fileSize: number): number => {
+  const fileSizeInMB = fileSize / (1024 * 1024);
+
+  // 找到第一个maxSize大于文件大小的配置
+  const config = CHUNK_CONFIG.SLICE_CONFIG.find(
+    (cfg) => !cfg.maxSize || fileSizeInMB <= cfg.maxSize
+  );
+
+  return config!.chunkSize * CHUNK_CONFIG.BASE_SIZE;
 };

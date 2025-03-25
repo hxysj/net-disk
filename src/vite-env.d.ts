@@ -44,6 +44,7 @@ declare module "@/utils/utils" {
     func: T,
     delay?: number
   ): (...args: Parameters<T>) => void;
+  export function getChunkSize(fileSize: number): number;
 }
 
 declare module "@/utils/request" {

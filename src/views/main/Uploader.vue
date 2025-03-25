@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, getCurrentInstance } from "vue";
-import { formatFileSize } from "@/utils/utils";
+import { formatFileSize, getChunkSize } from "@/utils/utils";
 import { STATUS } from "@/utils/data";
 import NotData from "@/components/NotData.vue";
 import SparkMD5 from "spark-md5";
@@ -180,13 +180,11 @@ const addFile: (file: File, filePid: string) => void = async (
   uploadFile(md5FileUid);
 };
 
-// ----------
-// 每一个分片的大小
-const chunkSize = 1024 * 1024 * 1;
 // 计算文件的MD5
 const computedMd5: (fileItem: FileItemType) => Promise<string | null> = (
   fileItem
 ) => {
+  let chunkSize = getChunkSize(fileItem.totalSize);
   let file = fileItem.file;
   // 根据不同浏览器的处理方式不同
   // let blogSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
@@ -252,12 +250,20 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
   chunkIndex = 0
 ) => {
   let currentFile = getFileByUid(uid);
+  let chunkSize = getChunkSize(currentFile.totalSize);
   let file = currentFile.file;
   // 文件大小
   const fileSize = currentFile.totalSize;
   // 总切片数
   const chunks = Math.ceil(fileSize / chunkSize);
-
+  console.log(
+    "当前分块大小",
+    chunkSize,
+    "文件总大小",
+    fileSize,
+    "总切片数",
+    chunks
+  );
   // 文件块上传任务
   async function uploadChunk(
     formData: any,
@@ -287,16 +293,55 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
         signal: signalItem.signal.signal,
         //上传后的回调信息
         onUploadProgress: (event: any) => {
-          //获取之前上传的文件的大小
+          // 获取当前分块的上传进度
           let loaded = event.loaded;
-          if (loaded > fileSize) {
-            loaded = fileSize;
+          // 限制当前分块的最大值
+          if (loaded > chunkSize) {
+            loaded = chunkSize;
           }
-          //现在上传的文件的大小
-          currentFile.uploadSize = chunkIndex * chunkSize + loaded;
-          currentFile.uploadProgress = parseFloat(
-            (currentFile.uploadSize / fileSize).toFixed(2)
-          );
+
+          // 计算总体进度
+          const previousChunksSize = chunkIndex * chunkSize; // 之前分块的总大小
+          const totalLoaded = previousChunksSize + loaded; // 已上传的总大小
+
+          // 使用requestAnimationFrame实现平滑过渡
+          const smoothProgress = (
+            startValue: number,
+            endValue: number,
+            duration: number = 300
+          ) => {
+            const startTime = performance.now();
+            const update = (currentTime: number) => {
+              const elapsed = currentTime - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+
+              // 使用easeOut函数使动画更自然
+              const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+              const currentValue =
+                startValue + (endValue - startValue) * easeOut(progress);
+
+              // 更新上传大小和进度
+              currentFile.uploadSize = Math.min(
+                Math.round(currentValue),
+                fileSize
+              );
+              currentFile.uploadProgress = parseFloat(
+                (currentFile.uploadSize / fileSize).toFixed(4)
+              );
+
+              if (progress < 1) {
+                requestAnimationFrame(update);
+              }
+            };
+
+            requestAnimationFrame(update);
+          };
+
+          // 计算目标进度值
+          const targetLoaded = Math.min(totalLoaded, fileSize);
+
+          // 从当前进度平滑过渡到目标进度
+          smoothProgress(currentFile.uploadSize, targetLoaded);
         },
       });
       //如果上传后，放回的值为 null则退出
@@ -327,8 +372,9 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
       if (error.message === "canceled") {
         return;
       }
-      console.log(error.message);
-      console.log("出现错误");
+      // 停止promise
+      signalItem.signal.abort();
+      signalItem.status = false;
       currentFile.status = STATUS.fail.value as keyof typeof STATUS;
       if (error.response) {
         currentFile.errorMsg = error.errorMsg;
