@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, getCurrentInstance } from "vue";
+import { ref, onMounted } from "vue";
 import { formatFileSize } from "@/utils/utils";
 import { STATUS } from "@/utils/data";
 import NotData from "@/components/NotData.vue";
