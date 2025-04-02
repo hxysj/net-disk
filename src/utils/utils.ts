@@ -253,13 +253,13 @@ export const debounce = <T extends (...args: any[]) => void>(
  * @returns 分片大小(字节)
  */
 export const getChunkSize = (fileSize: number): number => {
-  console.log(fileSize);
-  // const fileSizeInMB = fileSize / (1024 * 1024);
+  // console.log(fileSize);
+  const fileSizeInMB = fileSize / (1024 * 1024);
   // 找到第一个maxSize大于文件大小的配置
-  // const config = CHUNK_CONFIG.SLICE_CONFIG.find(
-  //   (cfg) => !cfg.maxSize || fileSizeInMB <= cfg.maxSize
-  // );
+  const config = CHUNK_CONFIG.SLICE_CONFIG.find(
+    (cfg) => !cfg.maxSize || fileSizeInMB <= cfg.maxSize
+  );
   // 先限制上传分片大小为 1MB
-  // return config!.chunkSize * CHUNK_CONFIG.BASE_SIZE;
-  return CHUNK_CONFIG.BASE_SIZE;
+  return config!.chunkSize * CHUNK_CONFIG.BASE_SIZE;
+  // return CHUNK_CONFIG.BASE_SIZE;
 };
