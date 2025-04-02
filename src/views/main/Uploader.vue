@@ -256,14 +256,6 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
   const fileSize = currentFile.totalSize;
   // 总切片数
   const chunks = Math.ceil(fileSize / chunkSize);
-  console.log(
-    "当前分块大小",
-    chunkSize,
-    "文件总大小",
-    fileSize,
-    "总切片数",
-    chunks
-  );
   // 文件块上传任务
   async function uploadChunk(
     formData: any,
@@ -369,9 +361,9 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
       }
     } catch (error: any) {
       // 取消上传
-      if (error.message === "canceled") {
-        return;
-      }
+      // if (error.message === "canceled") {
+      //   return;
+      // }
       // 停止promise
       signalItem.signal.abort();
       signalItem.status = false;

@@ -22,9 +22,6 @@
                 <div class="card">
                   <div class="card-header">
                     <span>上传任务</span>
-                    <span class="card-header-small-title"
-                      >（仅展示本次上传任务）</span
-                    >
                     <span
                       class="iconfont icon-del header-del"
                       @click="clearHistory"
@@ -102,6 +99,11 @@
       </div>
     </nav>
     <div class="body">
+      <ToolBall
+        @addFile="addFile"
+        :userSpace="useSpaceInfo.useSpace"
+        :totalSpace="useSpaceInfo.totalSpace"
+      />
       <div class="left-side" :class="[isHide ? 'showSide' : '']">
         <div class="menu-list">
           <template v-for="item in MENUS">
@@ -208,6 +210,7 @@ import { getCurrentInstance } from "vue";
 import request from "../utils/request";
 import Loadding from "@/components/Loadding.vue";
 import MessageModal from "@/components/message/MessageModal.vue";
+import ToolBall from "@/views/ToolBall/index.vue";
 // 请求的基本连接
 const baseurl =
   getCurrentInstance()?.appContext.config.globalProperties.$baseurl;
@@ -497,10 +500,7 @@ const spaceUsagePercent = computed(() => {
           font-size: 14px;
           display: flex;
           align-items: center;
-          .card-header-small-title {
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.5);
-          }
+
           .header-del {
             font-size: 12px;
           }
