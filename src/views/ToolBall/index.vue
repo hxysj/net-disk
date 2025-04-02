@@ -189,7 +189,7 @@ const handleUpload = (e: DragEvent) => {
 };
 
 // 处理AI对话
-const handleAIChat = (e: MouseEvent) => {
+const handleAIChat = () => {
   router.push("/message/session");
 };
 
@@ -216,7 +216,7 @@ const ballBackground = computed(() => {
 
 // 计算菜单位置
 const menuPosition = computed(() => {
-  const ballHeight = toolBallRef.value?.offsetHeight || 0;
+  // const ballHeight = toolBallRef.value?.offsetHeight || 0;
   const menuHeight = 250; // 菜单最大高度
   let top = "50%";
   let transform = "translateY(-50%)";

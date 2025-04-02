@@ -253,6 +253,7 @@ export const debounce = <T extends (...args: any[]) => void>(
  * @returns 分片大小(字节)
  */
 export const getChunkSize = (fileSize: number): number => {
+  console.log(fileSize);
   // const fileSizeInMB = fileSize / (1024 * 1024);
   // 找到第一个maxSize大于文件大小的配置
   // const config = CHUNK_CONFIG.SLICE_CONFIG.find(
