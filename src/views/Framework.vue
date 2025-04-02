@@ -500,7 +500,7 @@ const spaceUsagePercent = computed(() => {
           font-size: 14px;
           display: flex;
           align-items: center;
-
+          justify-content: space-between;
           .header-del {
             font-size: 12px;
           }
