@@ -43,7 +43,7 @@ const props = defineProps({
     default: "top",
   },
 });
-// console.log(props.width)
+
 // 窗口宽度
 const windowWidth = ref(window.innerWidth);
 // 内容的宽度
@@ -103,7 +103,6 @@ onUnmounted(() => {
     margin: 20px;
     background-color: white;
     border-radius: 5px;
-    // height: calc(100vh - 50px);
     .title {
       padding: 0.5rem;
       width: 100%;

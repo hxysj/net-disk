@@ -162,8 +162,4 @@ function drawDot (ctx) {
       height: 38px;
       cursor: pointer;
   }
-  /* .s-canvas canvas{ */
-      /* margin-top: 1px; */
-      /* margin-left: 8px; */
-  /* } */
 </style>

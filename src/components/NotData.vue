@@ -29,7 +29,6 @@ defineProps({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  // background-color: rgba(0,0,0,0.04);
   .not-data-img {
     width: 50px;
     height: 50px;

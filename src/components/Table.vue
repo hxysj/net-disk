@@ -99,17 +99,8 @@ const newList = computed<
   dataListItem[] | shareListItem[] | recycleItem[] | fileListItem[] | userItem[]
 >(() => props.tableData.list);
 
-onMounted(() => {
-  if (props.initFecth) {
-    props.fetch();
-  }
-});
-
-// -------------------------------------------------------
-// 确定修改文件名,默认不是新建的目录
-// 通过isnewDir确定是否为新建目录，如果是新建目录则发送新建目录的请求，并要求父组件刷新数据，否则修改data.fileId对于的name
 const emit = defineEmits(["selectDataList", "changePageSize"]);
-// -------------------------------------------table------------------------------------------
+
 // 全选或者全不选,将选中的数据回传给父组件
 const allCheck = computed(() => {
   let selectList;
@@ -133,8 +124,6 @@ const allCheck = computed(() => {
       )
       .map((item) => item.fileId);
   }
-  // 传回整个list
-  // console.log(selectList)
   emit("selectDataList", selectList);
   return (
     newList.value.every((item) => item.isCheck) && newList.value.length > 0
@@ -147,11 +136,17 @@ const changeCheckAll: () => void = () => {
     newList.value.map((item) => (item.isCheck = true));
   }
 };
-// ------------------------------------------------------------------------------
+
 // 页码发生变化
 const paginationChange = (num: number) => {
   emit("changePageSize", num);
 };
+
+onMounted(() => {
+  if (props.initFecth) {
+    props.fetch();
+  }
+});
 </script>
 
 <style scoped lang="scss">

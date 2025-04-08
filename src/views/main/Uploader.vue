@@ -261,14 +261,18 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
     formData: any,
     chunkIndex: number,
     status: keyof typeof STATUS,
-    fileId: string
+    fileId: string,
+    currentFile: FileItemType
   ): Promise<void> {
     // 如果文件已经上传完成，则退出
     if (
       status === STATUS.upload_seconds.value ||
       status === STATUS.upload_finish.value
-    )
+    ) {
+      currentFile.uploadSize = currentFile.totalSize;
+      currentFile.uploadProgress = 1;
       return;
+    }
     let signalItem = signalList.value.find((item) => item.fileId === fileId);
     if (!signalItem) {
       return;
@@ -306,7 +310,7 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
             const update = (currentTime: number) => {
               const elapsed = currentTime - startTime;
               const progress = Math.min(elapsed / duration, 1);
-
+              if (currentFile.uploadProgress === 1) return;
               // 使用easeOut函数使动画更自然
               const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
               const currentValue =
@@ -354,6 +358,7 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
         updateResult.data.data.status === STATUS.upload_finish.value
       ) {
         currentFile.uploadProgress = 1;
+        currentFile.uploadSize = currentFile.totalSize;
         deleteDataFromIDB(currentFile.fileId);
         localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
         // 上传文件结束后，刷新一下列表
@@ -449,13 +454,17 @@ const uploadFile: (uid: string, chunkIndex?: number) => void = async (
     formData.append("fileType", file.type);
 
     uploadPromises.push(
-      uploadChunk(formData, i, currentFile.status, currentFile.fileId)
+      uploadChunk(
+        formData,
+        i,
+        currentFile.status,
+        currentFile.fileId,
+        currentFile
+      )
     ); // 每个分片上传任务
-    // 每当上传队列中的任务达到 batchSize，就执行这些任务并等待它们完成
     if (uploadPromises.length === batchSize || i === chunks - 1) {
-      // 执行当前批次的请求，并等待它们完成
       await Promise.all(uploadPromises);
-      uploadPromises.length = 0; // 清空队列，准备下一批请求
+      uploadPromises.length = 0;
     }
   }
 
@@ -481,7 +490,7 @@ const pause_uploader = async (file_id: string) => {
     },
   });
 };
-// --------------------------------------------------------------------------
+
 // 恢复上传
 const continue_uploader = (uid: string, chunkIndex: number) => {
   fileList.value.map((item) => {
@@ -491,7 +500,7 @@ const continue_uploader = (uid: string, chunkIndex: number) => {
   });
   uploadFile(uid, chunkIndex);
 };
-// ------------------------------------------------------------------------------
+
 // 取消上传
 const cancel_uploader = async (uid: string, fileId: string) => {
   let signalItem = signalList.value.find((item) => item.fileId === fileId);
@@ -520,21 +529,22 @@ const cancel_uploader = async (uid: string, fileId: string) => {
     return;
   }
   fileList.value = fileList.value.filter((item) => item.uid != uid);
+  deleteDataFromIDB(fileId);
   localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
 };
-// ------------------------------------------------------------------------------------------------
+
 // 删除文件的上传记录
 const delete_file_history = (uid: string) => {
   fileList.value = fileList.value.filter((item) => item.uid != uid);
   localStorage.setItem("uploadFileList", JSON.stringify(fileList.value));
 };
-// ---------------------------------------------------------------------------
+
 // 删除所有上传记录
 const clearHistory = () => {
   fileList.value = [];
   localStorage.removeItem("uploadFileList");
 };
-// ----------------------------------------------------------------------------------------------
+
 onMounted(() => {
   if (localStorage.getItem("uploadFileList")) {
     let local_fileList = JSON.parse(

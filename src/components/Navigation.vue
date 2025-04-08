@@ -112,7 +112,6 @@ const getNavigationFolder: (path: string) => void = async (path) => {
   folderList.value = result.data.data;
 };
 
-// --------------------------------------------------
 // 当目录发生变化的时候,通知父组件页面可以发生变化
 const emit = defineEmits(["navChange"]);
 const doCallBack = () => {
@@ -147,7 +146,6 @@ watch(
     const path = newVal.query.path as string | undefined;
     const categoryId = newVal.params.category;
     category.value = categoryId;
-    // console.log(path)
     if (path === undefined) {
       // 默认在根目录的时候会走这个位置，要进行初始化
       init();
@@ -167,9 +165,6 @@ watch(
   }
 );
 
-defineExpose({ openFolder });
-
-// ----------------------------------------
 // 返回上一级
 const backParent = () => {
   // console.log(folderList.value)
@@ -194,6 +189,8 @@ const setCurrentFolder: (index: number) => void = (index) => {
   }
   setPath();
 };
+
+defineExpose({ openFolder });
 </script>
 
 <style lang="scss" scoped>

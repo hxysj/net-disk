@@ -503,6 +503,7 @@ const spaceUsagePercent = computed(() => {
           justify-content: space-between;
           .header-del {
             font-size: 12px;
+            cursor: pointer;
           }
         }
         .card-header > span {
